@@ -1,0 +1,2232 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Brain Blast! 🧠✨</title>
+
+<style>
+  :root {
+    --sky: #FFE066;
+    --coral: #FF6B6B;
+    --mint: #4ECDC4;
+    --purple: #A855F7;
+    --pink: #FF9ECD;
+    --blue: #5B9BD5;
+    --card-w: 380px;
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    font-family: 'Comic Sans MS', 'Chalkboard SE', 'Marker Felt', cursive;
+    background: #FFF8E7;
+    min-height: 100vh;
+    overflow-x: hidden;
+    position: relative;
+  }
+
+  /* Floating stars background */
+  .bg-star {
+    position: fixed;
+    font-size: 1.5rem;
+    opacity: 0.18;
+    animation: float linear infinite;
+    pointer-events: none;
+    z-index: 0;
+  }
+
+  @keyframes float {
+    0% { transform: translateY(110vh) rotate(0deg); }
+    100% { transform: translateY(-10vh) rotate(360deg); }
+  }
+
+  header {
+    text-align: center;
+    padding: 28px 20px 10px;
+    position: relative;
+    z-index: 1;
+  }
+
+  header h1 {
+    font-family: 'Comic Sans MS', 'Chalkboard SE', 'Marker Felt', cursive;
+    font-size: 3rem;
+    color: var(--coral);
+    text-shadow: 4px 4px 0 #FFB347, 8px 8px 0 rgba(0,0,0,0.08);
+    letter-spacing: 2px;
+  }
+
+  .subtitle {
+    font-size: 1rem;
+    color: #777;
+    font-weight: 700;
+    margin-top: 4px;
+  }
+
+  .scoreboard {
+    display: flex;
+    justify-content: center;
+    gap: 28px;
+    margin: 14px auto 6px;
+    flex-wrap: wrap;
+    position: relative;
+    z-index: 1;
+  }
+
+  .score-box {
+    background: white;
+    border-radius: 18px;
+    padding: 8px 22px;
+    font-size: 1rem;
+    font-weight: 800;
+    box-shadow: 0 4px 0 rgba(0,0,0,0.08);
+    display: flex;
+    align-items: center;
+    gap: 6px;
+  }
+
+  .score-box.correct { color: #22C55E; border: 3px solid #22C55E; }
+  .score-box.wrong { color: var(--coral); border: 3px solid var(--coral); }
+  .score-box.streak { color: var(--purple); border: 3px solid var(--purple); }
+
+  /* Category selector */
+  .categories {
+    display: flex;
+    justify-content: center;
+    gap: 10px;
+    flex-wrap: wrap;
+    margin: 10px auto 18px;
+    padding: 0 16px;
+    max-width: 700px;
+    position: relative;
+    z-index: 1;
+  }
+
+  .cat-btn {
+    background: white;
+    border: 3px solid transparent;
+    border-radius: 50px;
+    padding: 6px 18px;
+    font-family: 'Comic Sans MS', 'Chalkboard SE', 'Marker Felt', cursive;
+    font-size: 0.9rem;
+    font-weight: 800;
+    cursor: pointer;
+    transition: all 0.2s;
+    box-shadow: 0 3px 0 rgba(0,0,0,0.10);
+  }
+
+  .cat-btn:hover { transform: translateY(-2px); }
+  .cat-btn.active { color: white; transform: translateY(-2px) scale(1.06); }
+  .cat-btn[data-cat="math"] { border-color: var(--blue); color: var(--blue); }
+  .cat-btn[data-cat="math"].active { background: var(--blue); }
+  .cat-btn[data-cat="animals"] { border-color: #22C55E; color: #22C55E; }
+  .cat-btn[data-cat="animals"].active { background: #22C55E; }
+  .cat-btn[data-cat="words"] { border-color: var(--purple); color: var(--purple); }
+  .cat-btn[data-cat="words"].active { background: var(--purple); }
+  .cat-btn[data-cat="science"] { border-color: var(--coral); color: var(--coral); }
+  .cat-btn[data-cat="science"].active { background: var(--coral); }
+  .cat-btn[data-cat="all"] { border-color: #F59E0B; color: #F59E0B; }
+  .cat-btn[data-cat="all"].active { background: #F59E0B; }
+
+  /* Math sub-mode selector */
+  .math-submode {
+    display: none;
+    gap: 10px;
+    justify-content: center;
+    flex-wrap: wrap;
+    margin: 8px 0 4px;
+    position: relative;
+    z-index: 1;
+  }
+  .math-submode.visible { display: flex; }
+
+  .math-sub-btn {
+    background: white;
+    border: 3px solid #5B9BD5;
+    border-radius: 50px;
+    padding: 8px 20px;
+    font-family: 'Comic Sans MS', 'Chalkboard SE', 'Marker Felt', cursive;
+    font-size: 0.95rem;
+    font-weight: 800;
+    color: #5B9BD5;
+    cursor: pointer;
+    transition: all 0.15s;
+    box-shadow: 0 3px 0 rgba(0,0,0,0.08);
+  }
+  .math-sub-btn:hover { transform: translateY(-2px); }
+  .math-sub-btn.active { background: #5B9BD5; color: white; }
+  .math-sub-btn[data-sub="subtract"] { border-color: #A855F7; color: #A855F7; }
+  .math-sub-btn[data-sub="subtract"].active { background: #A855F7; color: white; }
+
+  /* Type-in answer */
+  .type-answer-wrap {
+    width: 100%;
+    max-width: var(--card-w);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 12px;
+    margin-bottom: 18px;
+  }
+  .type-answer-input {
+    width: 160px;
+    padding: 16px 20px;
+    font-family: 'Comic Sans MS', 'Chalkboard SE', 'Marker Felt', cursive;
+    font-size: 2rem;
+    font-weight: 900;
+    text-align: center;
+    border: 4px solid #E2E8F0;
+    border-radius: 20px;
+    background: white;
+    color: #1E293B;
+    box-shadow: 0 4px 0 rgba(0,0,0,0.08);
+    transition: border-color 0.2s;
+    outline: none;
+  }
+  .type-answer-input:focus { border-color: var(--blue); }
+  .type-answer-input.correct-ans { border-color: #22C55E; background: #DCFCE7; color: #15803D; animation: bounce 0.35s ease; }
+  .type-answer-input.wrong-ans { border-color: var(--coral); background: #FEE2E2; color: #B91C1C; animation: shake 0.35s ease; }
+  .type-submit-btn {
+    background: var(--blue);
+    color: white;
+    border: none;
+    border-radius: 50px;
+    padding: 12px 36px;
+    font-family: 'Comic Sans MS', 'Chalkboard SE', 'Marker Felt', cursive;
+    font-size: 1.1rem;
+    font-weight: 800;
+    cursor: pointer;
+    box-shadow: 0 5px 0 #3a7ab8;
+    transition: all 0.15s;
+  }
+  .type-submit-btn:hover { transform: translateY(-3px); box-shadow: 0 8px 0 #3a7ab8; }
+  .type-submit-btn:active { transform: translateY(2px); box-shadow: 0 2px 0 #3a7ab8; }
+  .type-submit-btn:disabled { opacity: 0.5; cursor: default; transform: none; box-shadow: 0 5px 0 #3a7ab8; }
+  .type-reveal {
+    font-size: 1rem;
+    font-weight: 800;
+    color: #B91C1C;
+    background: #FEE2E2;
+    border-radius: 12px;
+    padding: 8px 18px;
+    display: none;
+    text-align: center;
+  }
+
+  /* Card area */
+  .card-area {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding: 0 20px 20px;
+    position: relative;
+    z-index: 1;
+  }
+
+  .progress-bar-wrap {
+    width: 100%;
+    max-width: var(--card-w);
+    height: 12px;
+    background: #E5E7EB;
+    border-radius: 99px;
+    margin-bottom: 16px;
+    overflow: hidden;
+  }
+
+  .progress-fill {
+    height: 100%;
+    background: linear-gradient(90deg, var(--mint), var(--blue));
+    border-radius: 99px;
+    transition: width 0.5s ease;
+  }
+
+  /* Flip card */
+  .card-scene {
+    width: var(--card-w);
+    max-width: 100%;
+    height: 260px;
+    perspective: 1000px;
+    cursor: pointer;
+    margin-bottom: 22px;
+  }
+
+  .card-inner {
+    width: 100%;
+    height: 100%;
+    position: relative;
+    transform-style: preserve-3d;
+    transition: transform 0.55s cubic-bezier(0.4,0,0.2,1);
+  }
+
+  .card-inner.flipped { transform: rotateY(180deg); }
+
+  .card-face {
+    position: absolute;
+    width: 100%;
+    height: 100%;
+    backface-visibility: hidden;
+    border-radius: 28px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 28px 24px;
+    text-align: center;
+    box-shadow: 0 10px 40px rgba(0,0,0,0.13), 0 6px 0 rgba(0,0,0,0.08);
+  }
+
+  .card-front {
+    background: white;
+    border: 4px solid var(--mint);
+  }
+
+  .card-back {
+    background: linear-gradient(135deg, #ECFDF5, #D1FAE5);
+    border: 4px solid #22C55E;
+    transform: rotateY(180deg);
+  }
+
+  .card-emoji {
+    font-size: 3rem;
+    margin-bottom: 10px;
+    animation: popIn 0.4s cubic-bezier(0.34,1.56,0.64,1);
+  }
+
+  @keyframes popIn {
+    from { transform: scale(0.5); opacity: 0; }
+    to { transform: scale(1); opacity: 1; }
+  }
+
+  .card-question {
+    font-size: 1.35rem;
+    font-weight: 800;
+    color: #1E293B;
+    line-height: 1.35;
+  }
+
+  .card-answer {
+    font-size: 1.55rem;
+    font-weight: 800;
+    color: #166534;
+  }
+
+  .card-hint {
+    font-size: 0.85rem;
+    color: #888;
+    margin-top: 8px;
+    font-weight: 600;
+  }
+
+  .flip-label {
+    font-size: 0.78rem;
+    color: #aaa;
+    font-weight: 700;
+    letter-spacing: 0.5px;
+    margin-top: 10px;
+  }
+
+  /* Answer buttons */
+  .choices {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 12px;
+    width: 100%;
+    max-width: var(--card-w);
+    margin-bottom: 18px;
+  }
+
+  .choice-btn {
+    background: white;
+    border: 3px solid #E2E8F0;
+    border-radius: 18px;
+    padding: 14px 10px;
+    font-family: 'Comic Sans MS', 'Chalkboard SE', 'Marker Felt', cursive;
+    font-size: 1rem;
+    font-weight: 800;
+    cursor: pointer;
+    transition: all 0.18s;
+    box-shadow: 0 4px 0 rgba(0,0,0,0.08);
+    color: #1E293B;
+  }
+
+  .choice-btn:hover:not(:disabled) {
+    border-color: var(--mint);
+    transform: translateY(-3px);
+    box-shadow: 0 7px 0 rgba(78,205,196,0.25);
+  }
+
+  .choice-btn.correct-ans {
+    background: #DCFCE7;
+    border-color: #22C55E;
+    color: #15803D;
+    animation: bounce 0.35s ease;
+  }
+
+  .choice-btn.wrong-ans {
+    background: #FEE2E2;
+    border-color: var(--coral);
+    color: #B91C1C;
+    animation: shake 0.35s ease;
+  }
+
+  @keyframes bounce {
+    0%,100% { transform: translateY(0); }
+    40% { transform: translateY(-10px); }
+  }
+
+  @keyframes shake {
+    0%,100% { transform: translateX(0); }
+    25% { transform: translateX(-8px); }
+    75% { transform: translateX(8px); }
+  }
+
+  .nav-btns {
+    display: flex;
+    gap: 14px;
+  }
+
+  .nav-btn {
+    background: var(--coral);
+    color: white;
+    border: none;
+    border-radius: 50px;
+    padding: 12px 32px;
+    font-family: 'Comic Sans MS', 'Chalkboard SE', 'Marker Felt', cursive;
+    font-size: 1.1rem;
+    cursor: pointer;
+    box-shadow: 0 5px 0 #c94b4b;
+    transition: all 0.15s;
+    letter-spacing: 0.5px;
+  }
+
+  .nav-btn:hover { transform: translateY(-3px); box-shadow: 0 8px 0 #c94b4b; }
+  .nav-btn:active { transform: translateY(2px); box-shadow: 0 2px 0 #c94b4b; }
+  .nav-btn.secondary {
+    background: var(--mint);
+    box-shadow: 0 5px 0 #2da39c;
+  }
+  .nav-btn.secondary:hover { box-shadow: 0 8px 0 #2da39c; }
+  .nav-btn.secondary:active { box-shadow: 0 2px 0 #2da39c; }
+
+  /* Feedback popup */
+  .feedback {
+    position: fixed;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%) scale(0);
+    background: white;
+    border-radius: 30px;
+    padding: 28px 40px;
+    font-family: 'Comic Sans MS', 'Chalkboard SE', 'Marker Felt', cursive;
+    font-size: 2rem;
+    text-align: center;
+    z-index: 100;
+    box-shadow: 0 20px 60px rgba(0,0,0,0.2);
+    transition: transform 0.3s cubic-bezier(0.34,1.56,0.64,1);
+    pointer-events: none;
+  }
+
+  .feedback.show { transform: translate(-50%, -50%) scale(1); }
+  .feedback.good { color: #22C55E; border: 4px solid #22C55E; }
+  .feedback.bad { color: var(--coral); border: 4px solid var(--coral); }
+
+  /* Win screen */
+  .win-screen {
+    display: none;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    text-align: center;
+    padding: 30px 20px;
+    position: relative;
+    z-index: 1;
+  }
+
+  .win-screen.show { display: flex; }
+  .win-screen h2 {
+    font-family: 'Comic Sans MS', 'Chalkboard SE', 'Marker Felt', cursive;
+    font-size: 2.8rem;
+    color: var(--coral);
+    text-shadow: 4px 4px 0 #FFB347;
+    margin-bottom: 8px;
+  }
+
+  .win-stars {
+    font-size: 3rem;
+    margin: 10px 0;
+    animation: popIn 0.5s ease both;
+  }
+
+  .win-score {
+    font-size: 1.2rem;
+    font-weight: 800;
+    color: #555;
+    margin-bottom: 24px;
+  }
+
+  /* confetti */
+  .confetti-piece {
+    position: fixed;
+    width: 10px;
+    height: 14px;
+    top: -20px;
+    border-radius: 2px;
+    animation: confettiFall linear forwards;
+    pointer-events: none;
+    z-index: 200;
+  }
+
+  @keyframes confettiFall {
+    to { transform: translateY(110vh) rotate(720deg); opacity: 0; }
+  }
+
+  @media (max-width: 420px) {
+    header h1 { font-size: 2.2rem; }
+    .card-scene { height: 220px; }
+    .card-question { font-size: 1.15rem; }
+  }
+
+  /* ---- MODE TOGGLE ---- */
+  .mode-toggle {
+    display: flex;
+    justify-content: center;
+    gap: 0;
+    margin: 18px auto 0;
+    background: #F0EDE6;
+    border-radius: 50px;
+    padding: 5px;
+    width: fit-content;
+    box-shadow: inset 0 2px 6px rgba(0,0,0,0.10);
+    position: relative;
+    z-index: 1;
+  }
+
+  .mode-btn {
+    background: transparent;
+    border: none;
+    border-radius: 50px;
+    padding: 10px 26px;
+    font-family: 'Comic Sans MS', 'Chalkboard SE', 'Marker Felt', cursive;
+    font-size: 1rem;
+    font-weight: 800;
+    cursor: pointer;
+    color: #999;
+    transition: all 0.25s;
+  }
+
+  .mode-btn.active {
+    background: white;
+    color: #1E293B;
+    box-shadow: 0 3px 10px rgba(0,0,0,0.12);
+  }
+
+  /* ---- DINNER TABLE SECTION ---- */
+  #dinnerSection {
+    display: none;
+    flex-direction: column;
+    align-items: center;
+    padding: 24px 20px 40px;
+    position: relative;
+    z-index: 1;
+  }
+
+  .dinner-filter {
+    display: flex;
+    justify-content: center;
+    gap: 8px;
+    flex-wrap: wrap;
+    margin-bottom: 24px;
+    max-width: 480px;
+  }
+
+  .d-filter-btn {
+    background: white;
+    border: 2.5px solid #E2E8F0;
+    border-radius: 50px;
+    padding: 5px 16px;
+    font-family: 'Comic Sans MS', 'Chalkboard SE', 'Marker Felt', cursive;
+    font-size: 0.85rem;
+    font-weight: 800;
+    cursor: pointer;
+    color: #888;
+    transition: all 0.2s;
+  }
+
+  .d-filter-btn.active,
+  .d-filter-btn:hover {
+    border-color: #F59E0B;
+    color: #92400E;
+    background: #FEF3C7;
+    transform: translateY(-1px);
+  }
+
+  /* The big dinner card */
+  .dinner-card-wrap {
+    width: 340px;
+    max-width: 100%;
+    position: relative;
+    margin-bottom: 28px;
+  }
+
+  /* stack illusion cards behind */
+  .dinner-card-wrap::before,
+  .dinner-card-wrap::after {
+    content: '';
+    position: absolute;
+    width: 100%;
+    height: 100%;
+    border-radius: 28px;
+    top: 0; left: 0;
+  }
+
+  .dinner-card-wrap::after {
+    background: #FBBF24;
+    transform: rotate(3deg) translateY(6px);
+    z-index: 0;
+  }
+
+  .dinner-card-wrap::before {
+    background: #FCD34D;
+    transform: rotate(-2deg) translateY(4px);
+    z-index: 0;
+  }
+
+  .dinner-card {
+    background: white;
+    border-radius: 28px;
+    padding: 36px 28px 28px;
+    text-align: center;
+    box-shadow: 0 8px 32px rgba(0,0,0,0.12);
+    position: relative;
+    z-index: 1;
+    border: 3px solid #FDE68A;
+    min-height: 280px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    transition: transform 0.35s cubic-bezier(0.34,1.3,0.64,1), opacity 0.2s;
+  }
+
+  .dinner-card.swoosh-out {
+    transform: translateX(120%) rotate(12deg);
+    opacity: 0;
+  }
+
+  .dinner-card.swoosh-in {
+    animation: swooshIn 0.4s cubic-bezier(0.34,1.2,0.64,1) both;
+  }
+
+  @keyframes swooshIn {
+    from { transform: translateX(-80%) rotate(-8deg); opacity: 0; }
+    to { transform: translateX(0) rotate(0deg); opacity: 1; }
+  }
+
+  .dinner-tag {
+    display: inline-block;
+    font-size: 0.72rem;
+    font-weight: 800;
+    letter-spacing: 1.5px;
+    text-transform: uppercase;
+    padding: 3px 12px;
+    border-radius: 50px;
+    margin-bottom: 16px;
+  }
+
+  .dinner-tag.imaginative { background: #EDE9FE; color: #6D28D9; }
+  .dinner-tag.silly { background: #FEE2E2; color: #B91C1C; }
+  .dinner-tag.deep { background: #DBEAFE; color: #1D4ED8; }
+  .dinner-tag.favorites { background: #DCFCE7; color: #15803D; }
+  .dinner-tag.story { background: #FEF3C7; color: #92400E; }
+
+  .dinner-emoji-big {
+    font-size: 3.5rem;
+    margin-bottom: 14px;
+    display: block;
+  }
+
+  .dinner-question {
+    font-size: 1.25rem;
+    font-weight: 800;
+    color: #1E293B;
+    line-height: 1.45;
+    margin-bottom: 14px;
+  }
+
+  .dinner-prompt {
+    font-size: 0.82rem;
+    color: #94A3B8;
+    font-style: italic;
+    font-weight: 600;
+  }
+
+  .dinner-counter {
+    font-size: 0.82rem;
+    color: #CBD5E1;
+    font-weight: 700;
+    margin-top: 4px;
+  }
+
+  .dinner-nav {
+    display: flex;
+    gap: 16px;
+    align-items: center;
+  }
+
+  .dinner-nav-btn {
+    width: 54px;
+    height: 54px;
+    border-radius: 50%;
+    border: none;
+    font-size: 1.4rem;
+    cursor: pointer;
+    transition: all 0.15s;
+    box-shadow: 0 4px 0 rgba(0,0,0,0.12);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+
+  .dinner-nav-btn.prev-d {
+    background: #F1F5F9;
+    color: #64748B;
+    box-shadow: 0 4px 0 #CBD5E1;
+  }
+
+  .dinner-nav-btn.next-d {
+    background: #FBBF24;
+    color: white;
+    box-shadow: 0 4px 0 #D97706;
+    width: 64px;
+    height: 64px;
+    font-size: 1.6rem;
+  }
+
+  .dinner-nav-btn:hover { transform: translateY(-3px); }
+  .dinner-nav-btn:active { transform: translateY(1px); }
+
+  .dinner-shuffle-btn {
+    background: white;
+    border: 2.5px solid #E2E8F0;
+    border-radius: 50px;
+    padding: 8px 20px;
+    font-family: 'Comic Sans MS', 'Chalkboard SE', 'Marker Felt', cursive;
+    font-size: 0.85rem;
+    font-weight: 800;
+    color: #64748B;
+    cursor: pointer;
+    margin-top: 18px;
+    transition: all 0.15s;
+  }
+
+  .dinner-shuffle-btn:hover { border-color: #FBBF24; color: #92400E; background: #FFFBEB; }
+
+  /* ===== HISTORY SECTION ===== */
+  .h-filter {
+    display: flex; gap: 8px; flex-wrap: wrap; justify-content: center;
+    margin-bottom: 18px; position: relative; z-index: 1;
+  }
+  .h-filter-btn {
+    background: white; border: 2.5px solid #B45309; color: #B45309;
+    border-radius: 50px; padding: 7px 16px;
+    font-family: 'Comic Sans MS','Chalkboard SE','Marker Felt',cursive;
+    font-size: 0.85rem; font-weight: 800; cursor: pointer; transition: all 0.15s;
+  }
+  .h-filter-btn:hover { transform: translateY(-2px); }
+  .h-filter-btn.active { background: #B45309; color: white; }
+
+  .h-lesson-card {
+    background: linear-gradient(145deg, #1C1007, #2D1B07);
+    border: 2px solid #92400E;
+    border-radius: 24px;
+    width: 380px; max-width: 100%;
+    padding: 28px 24px 22px;
+    box-shadow: 0 16px 48px rgba(0,0,0,0.35), inset 0 1px 0 rgba(255,255,255,0.06);
+    position: relative;
+    margin-bottom: 16px;
+  }
+  .h-era-badge {
+    position: absolute; top: 16px; right: 16px;
+    background: #92400E; color: #FDE68A;
+    border-radius: 50px; padding: 4px 14px;
+    font-size: 0.72rem; font-weight: 900; letter-spacing: 1px; text-transform: uppercase;
+  }
+  .h-lesson-emoji {
+    font-size: 3.2rem; text-align: center; margin-bottom: 10px; display: block;
+  }
+  .h-lesson-title {
+    font-size: 1.15rem; font-weight: 900; color: #FDE68A;
+    text-align: center; margin-bottom: 14px; line-height: 1.3;
+  }
+  .h-lesson-body {
+    font-size: 0.88rem; font-weight: 700; color: #D6B896;
+    line-height: 1.65; margin-bottom: 20px;
+  }
+  .h-lesson-body b { color: #FDE68A; }
+  .h-quiz-btn {
+    display: block; width: 100%;
+    background: #D97706; color: white; border: none;
+    border-radius: 16px; padding: 13px;
+    font-family: 'Comic Sans MS','Chalkboard SE','Marker Felt',cursive;
+    font-size: 1rem; font-weight: 900; cursor: pointer;
+    box-shadow: 0 5px 0 #92400E; transition: all 0.15s;
+  }
+  .h-quiz-btn:hover { transform: translateY(-2px); box-shadow: 0 7px 0 #92400E; }
+  .h-quiz-btn:active { transform: translateY(2px); box-shadow: 0 2px 0 #92400E; }
+  .h-quiz-btn:disabled { opacity: 0.4; cursor: default; transform: none; }
+
+  .h-quiz-panel {
+    width: 380px; max-width: 100%;
+    background: #0F172A; border: 2px solid #1E3A5F;
+    border-radius: 20px; padding: 20px 18px;
+    margin-bottom: 14px;
+  }
+  .h-quiz-q {
+    font-size: 1rem; font-weight: 800; color: #F1F5F9;
+    margin-bottom: 14px; line-height: 1.4;
+  }
+  .h-quiz-choices {
+    display: grid; grid-template-columns: 1fr 1fr; gap: 10px;
+    margin-bottom: 12px;
+  }
+  .h-choice {
+    background: #1E293B; border: 2px solid #334155;
+    border-radius: 14px; padding: 11px 8px;
+    font-family: 'Comic Sans MS','Chalkboard SE','Marker Felt',cursive;
+    font-size: 0.82rem; font-weight: 800; color: #CBD5E1;
+    cursor: pointer; transition: all 0.15s; text-align: center; line-height: 1.3;
+  }
+  .h-choice:hover:not(:disabled) { border-color: #FBBF24; color: white; background: #2D2009; transform: translateY(-2px); }
+  .h-choice.h-correct { background: #14532D; border-color: #22C55E; color: #86EFAC; }
+  .h-choice.h-wrong   { background: #450A0A; border-color: #EF4444; color: #FCA5A5; }
+  .h-quiz-fact {
+    font-size: 0.8rem; font-weight: 700; color: #94A3B8;
+    background: #1E293B; border-left: 3px solid #FBBF24;
+    border-radius: 0 10px 10px 0; padding: 10px 14px;
+    line-height: 1.5; display: none;
+  }
+
+  .h-score-bar {
+    display: flex; gap: 16px; margin-bottom: 10px;
+  }
+  .h-score-pill {
+    border-radius: 50px; padding: 5px 18px;
+    font-size: 0.9rem; font-weight: 800;
+    background: white; box-shadow: 0 3px 0 rgba(0,0,0,0.08);
+  }
+  .h-score-pill.correct { color: #22C55E; border: 2.5px solid #22C55E; }
+  .h-score-pill.wrong   { color: #EF4444; border: 2.5px solid #EF4444; }
+  .h-progress { font-size: 0.78rem; color: #64748B; font-weight: 700; margin-bottom: 14px; }
+  .h-nav-row { display: flex; gap: 14px; }
+  .h-nav-btn {
+    background: #1E293B; color: #94A3B8; border: 2px solid #334155;
+    border-radius: 50px; padding: 10px 22px;
+    font-family: 'Comic Sans MS','Chalkboard SE','Marker Felt',cursive;
+    font-size: 0.95rem; font-weight: 800; cursor: pointer; transition: all 0.15s;
+  }
+  .h-nav-btn.primary { background: #D97706; color: white; border-color: #D97706; box-shadow: 0 4px 0 #92400E; }
+  .h-nav-btn.primary:hover { transform: translateY(-2px); box-shadow: 0 6px 0 #92400E; }
+  .h-nav-btn:hover { border-color: #FBBF24; color: white; }
+
+
+</style>
+</head>
+<body>
+
+<!-- Floating background emojis -->
+<div class="bg-star" style="left:5%;animation-duration:12s;animation-delay:0s">⭐</div>
+<div class="bg-star" style="left:15%;animation-duration:15s;animation-delay:2s">🌟</div>
+<div class="bg-star" style="left:30%;animation-duration:9s;animation-delay:4s">✨</div>
+<div class="bg-star" style="left:50%;animation-duration:13s;animation-delay:1s">🌈</div>
+<div class="bg-star" style="left:65%;animation-duration:11s;animation-delay:6s">⭐</div>
+<div class="bg-star" style="left:80%;animation-duration:16s;animation-delay:3s">🌟</div>
+<div class="bg-star" style="left:92%;animation-duration:10s;animation-delay:7s">✨</div>
+
+<header>
+  <h1 id="mainTitle">🧠 Brain Blast! ✨</h1>
+  <p class="subtitle" id="mainSubtitle">Tap a card to learn, then pick the right answer!</p>
+</header>
+
+<div class="mode-toggle">
+  <button class="mode-btn active" id="modeGame" onclick="switchMode('game')">🎮 Brain Blast</button>
+  <button class="mode-btn" id="modeDinner" onclick="switchMode('dinner')">🍽️ Dinner Table Talk</button>
+  <button class="mode-btn" id="modeHistory" onclick="switchMode('history')">📜 History</button>
+</div>
+
+<div class="scoreboard" id="scoreboard">
+  <div class="score-box correct">✅ Correct: <span id="correctCount">0</span></div>
+  <div class="score-box wrong">❌ Wrong: <span id="wrongCount">0</span></div>
+  <div class="score-box streak">🔥 Streak: <span id="streakCount">0</span></div>
+</div>
+
+<div class="categories" id="categoriesDiv">
+  <button class="cat-btn active" data-cat="all">🌟 All</button>
+  <button class="cat-btn" data-cat="math">🔢 Math</button>
+  <button class="cat-btn" data-cat="animals">🐾 Animals</button>
+  <button class="cat-btn" data-cat="words">📖 Words</button>
+  <button class="cat-btn" data-cat="science">🔬 Science</button>
+</div>
+
+<div class="math-submode" id="mathSubmode">
+  <button class="math-sub-btn active" data-sub="add" onclick="setMathSub('add', this)">➕ Addition</button>
+  <button class="math-sub-btn" data-sub="subtract" onclick="setMathSub('subtract', this)">➖ Subtraction</button>
+</div>
+
+<div class="card-area" id="cardArea">
+  <div class="progress-bar-wrap">
+    <div class="progress-fill" id="progressFill" style="width:0%"></div>
+  </div>
+
+  <div class="card-scene" id="cardScene" onclick="flipCard()">
+    <div class="card-inner" id="cardInner">
+      <div class="card-face card-front">
+        <div class="card-emoji" id="cardEmoji">🌟</div>
+        <div class="card-question" id="cardQuestion">Loading...</div>
+        <div class="flip-label">👆 Tap to peek at the answer!</div>
+      </div>
+      <div class="card-face card-back">
+        <div class="card-emoji">💡</div>
+        <div class="card-answer" id="cardAnswer">Answer</div>
+        <div class="card-hint" id="cardHint"></div>
+      </div>
+    </div>
+  </div>
+
+  <div class="choices" id="choices"></div>
+
+  <div class="type-answer-wrap" id="typeAnswerWrap" style="display:none;">
+    <input class="type-answer-input" id="typeAnswerInput" type="number" inputmode="numeric" pattern="[0-9]*" placeholder="?" autocomplete="off" />
+    <button class="type-submit-btn" id="typeSubmitBtn" onclick="submitTypedAnswer()">Check ✅</button>
+    <div class="type-reveal" id="typeReveal"></div>
+  </div>
+
+  <div class="nav-btns">
+    <button class="nav-btn secondary" onclick="prevCard()">⬅ Back</button>
+    <button class="nav-btn" onclick="nextCard()">Next ➡</button>
+  </div>
+</div>
+
+<div class="win-screen" id="winScreen">
+  <h2>🎉 Amazing Job! 🎉</h2>
+  <div class="win-stars" id="winStars">⭐⭐⭐</div>
+  <div class="win-score" id="winScore"></div>
+  <button class="nav-btn" onclick="restartGame()">Play Again! 🚀</button>
+</div>
+
+<div class="feedback" id="feedback"></div>
+
+<!-- ===== DINNER TABLE TALK SECTION ===== -->
+<div id="dinnerSection">
+
+  <div class="dinner-filter">
+    <button class="d-filter-btn active" data-dtype="all" onclick="filterDinner('all', this)">✨ All</button>
+    <button class="d-filter-btn" data-dtype="imaginative" onclick="filterDinner('imaginative', this)">🌈 Imaginative</button>
+    <button class="d-filter-btn" data-dtype="silly" onclick="filterDinner('silly', this)">🤪 Silly</button>
+    <button class="d-filter-btn" data-dtype="deep" onclick="filterDinner('deep', this)">💭 Deep</button>
+    <button class="d-filter-btn" data-dtype="favorites" onclick="filterDinner('favorites', this)">⭐ Favorites</button>
+    <button class="d-filter-btn" data-dtype="story" onclick="filterDinner('story', this)">📖 Story Time</button>
+  </div>
+
+  <div class="dinner-card-wrap">
+    <div class="dinner-card" id="dinnerCard">
+      <span class="dinner-tag" id="dinnerTag">Imaginative</span>
+      <span class="dinner-emoji-big" id="dinnerEmoji">🌈</span>
+      <div class="dinner-question" id="dinnerQuestion">Loading...</div>
+      <div class="dinner-prompt" id="dinnerPrompt"></div>
+    </div>
+  </div>
+
+  <div class="dinner-counter" id="dinnerCounter">Card 1 of 30</div>
+
+  <div class="dinner-nav" style="margin-top:18px;">
+    <button class="dinner-nav-btn prev-d" onclick="prevDinner()" title="Previous">⬅</button>
+    <button class="dinner-nav-btn next-d" onclick="nextDinner()" title="Next card">➡</button>
+  </div>
+
+  <button class="dinner-shuffle-btn" onclick="shuffleDinner()">🔀 Shuffle Cards</button>
+
+</div>
+
+<!-- ===== HISTORY SECTION ===== -->
+<div id="historySection" style="display:none; flex-direction:column; align-items:center; padding:16px 16px 40px; position:relative; z-index:1;">
+
+  <!-- Era filter -->
+  <div class="h-filter" id="hFilter">
+    <button class="h-filter-btn active" data-era="all" onclick="filterHistory('all',this)">🌍 All</button>
+    <button class="h-filter-btn" data-era="ancient" onclick="filterHistory('ancient',this)">🏛️ Ancient</button>
+    <button class="h-filter-btn" data-era="medieval" onclick="filterHistory('medieval',this)">⚔️ Medieval</button>
+    <button class="h-filter-btn" data-era="modern" onclick="filterHistory('modern',this)">🌐 Modern</button>
+    <button class="h-filter-btn" data-era="american" onclick="filterHistory('american',this)">🦅 American</button>
+  </div>
+
+  <!-- Lesson card (front) -->
+  <div class="h-lesson-card" id="hLessonCard">
+    <div class="h-era-badge" id="hEraBadge">Ancient</div>
+    <div class="h-lesson-emoji" id="hLessonEmoji">🏛️</div>
+    <div class="h-lesson-title" id="hLessonTitle">Loading...</div>
+    <div class="h-lesson-body" id="hLessonBody"></div>
+    <button class="h-quiz-btn" onclick="showHistoryQuiz()">Quiz me! 🎯</button>
+  </div>
+
+  <!-- Quiz panel (hidden until button pressed) -->
+  <div class="h-quiz-panel" id="hQuizPanel" style="display:none;">
+    <div class="h-quiz-q" id="hQuizQ"></div>
+    <div class="h-quiz-choices" id="hQuizChoices"></div>
+    <div class="h-quiz-fact" id="hQuizFact"></div>
+  </div>
+
+  <!-- Score + nav -->
+  <div class="h-score-bar">
+    <div class="h-score-pill correct">✅ <span id="hCorrect">0</span></div>
+    <div class="h-score-pill wrong">❌ <span id="hWrong">0</span></div>
+  </div>
+  <div class="h-progress" id="hProgress">Lesson 1 of 20</div>
+  <div class="h-nav-row">
+    <button class="h-nav-btn" onclick="prevHistory()">⬅ Back</button>
+    <button class="h-nav-btn primary" onclick="nextHistory()">Next Lesson ➡</button>
+  </div>
+
+</div>
+
+</div>
+
+<script>
+const ALL_CARDS = [
+  // MATH
+  { cat:'math', emoji:'🍕', q:'If you have 3 slices of pizza and eat 1, how many are left?', a:'2 slices', choices:['2 slices','4 slices','1 slice','3 slices'], hint:'Count what remains!' },
+  { cat:'math', emoji:'🐑', q:'Count the legs on 2 sheep. How many legs are there?', a:'8 legs', choices:['6 legs','8 legs','4 legs','10 legs'], hint:'Each sheep has 4 legs.' },
+  { cat:'math', emoji:'🍎', q:'5 red apples plus 3 green apples equals how many apples?', a:'8 apples', choices:['7 apples','9 apples','8 apples','6 apples'], hint:'Add them together!' },
+  { cat:'math', emoji:'🪙', q:'You have 10 coins and give 4 away. How many do you have?', a:'6 coins', choices:['5 coins','7 coins','4 coins','6 coins'], hint:'10 minus 4!' },
+  { cat:'math', emoji:'🎈', q:'If there are 4 birthday cakes with 3 candles each, how many candles?', a:'12 candles', choices:['10 candles','14 candles','12 candles','8 candles'], hint:'Multiply 4 × 3!' },
+  { cat:'math', emoji:'🐣', q:'A hen lays 2 eggs a day. How many eggs in 3 days?', a:'6 eggs', choices:['5 eggs','6 eggs','7 eggs','4 eggs'], hint:'2 + 2 + 2!' },
+  { cat:'math', emoji:'🌷', q:'Which number is bigger: 47 or 74?', a:'74', choices:['47','74','They are equal','Cannot tell'], hint:'Look at the tens digit!' },
+  { cat:'math', emoji:'📐', q:'How many sides does a triangle have?', a:'3 sides', choices:['4 sides','3 sides','5 sides','2 sides'], hint:'Tri means three!' },
+
+  // ANIMALS
+  { cat:'animals', emoji:'🦈', q:'What is the largest fish in the ocean?', a:'Whale shark', choices:['Great white shark','Whale shark','Blue whale','Giant squid'], hint:'It is gentle and eats tiny plankton.' },
+  { cat:'animals', emoji:'🦋', q:'What do caterpillars turn into?', a:'Butterflies', choices:['Bees','Butterflies','Moths & butterflies','Beetles'], hint:'They sleep in a cocoon first!' },
+  { cat:'animals', emoji:'🐘', q:'Which animal has the best memory?', a:'Elephant', choices:['Dolphin','Elephant','Crow','Chimpanzee'], hint:'They never forget!' },
+  { cat:'animals', emoji:'🦜', q:'What is a group of owls called?', a:'A parliament', choices:['A flock','A parliament','A herd','A pack'], hint:'Like where lawmakers work!' },
+  { cat:'animals', emoji:'🐧', q:'Can penguins fly?', a:'No — they swim!', choices:['Yes, at night','No — they swim!','Only baby penguins','Yes, very fast'], hint:'Their wings are flippers.' },
+  { cat:'animals', emoji:'🐙', q:'How many hearts does an octopus have?', a:'3 hearts', choices:['1 heart','2 hearts','3 hearts','4 hearts'], hint:'Two pump blood to the gills, one to the body!' },
+  { cat:'animals', emoji:'🦒', q:'What do giraffes eat?', a:'Leaves from trees', choices:['Grass only','Leaves from trees','Fish','Insects'], hint:'Their long neck reaches high branches!' },
+  { cat:'animals', emoji:'🐢', q:'How long can a tortoise live?', a:'Over 100 years!', choices:['About 10 years','50 years','Over 100 years!','30 years'], hint:'Some are older than your great-great-grandparents!' },
+
+  // WORDS
+  { cat:'words', emoji:'📝', q:'What do you call a word that describes a noun? (e.g., "big" or "blue")', a:'Adjective', choices:['Verb','Noun','Adjective','Adverb'], hint:'It describes how something looks or feels.' },
+  { cat:'words', emoji:'🔤', q:'How many vowels are in the English alphabet?', a:'5 vowels', choices:['3 vowels','5 vowels','7 vowels','4 vowels'], hint:'A, E, I, O, U!' },
+  { cat:'words', emoji:'📚', q:'What is the opposite of "ancient"?', a:'Modern', choices:['Old','Modern','Large','Slow'], hint:'Things made today are this.' },
+  { cat:'words', emoji:'🗺️', q:'What do you call a made-up story about dragons and magic?', a:'Fantasy', choices:['Biography','History','Fantasy','Poetry'], hint:'Not real — purely from imagination!' },
+  { cat:'words', emoji:'✏️', q:'Unscramble this: DOBRE', a:'BORED', choices:['BOARD','BORED','ROPED','BREED'], hint:'How you feel when nothing fun is happening.' },
+  { cat:'words', emoji:'🎭', q:'What word means the same as "happy"?', a:'Joyful', choices:['Sad','Tired','Joyful','Angry'], hint:'It starts with "joy"!' },
+  { cat:'words', emoji:'🔡', q:'What is a word that sounds the same but has a different meaning? (e.g., "bear" and "bare")', a:'Homophone', choices:['Synonym','Antonym','Homophone','Rhyme'], hint:'Homo = same, phone = sound.' },
+
+  // SCIENCE
+  { cat:'science', emoji:'🌍', q:'What do plants need to make their food?', a:'Sunlight, water & air', choices:['Sunlight, water & air','Just water','Just sunlight','Soil only'], hint:'Think about what a plant needs to grow!' },
+  { cat:'science', emoji:'🌧️', q:'What is the water cycle step where water vapor becomes clouds?', a:'Condensation', choices:['Evaporation','Precipitation','Condensation','Runoff'], hint:'Water vapour cools and clumps together.' },
+  { cat:'science', emoji:'🧲', q:'What material is attracted to a magnet?', a:'Iron (metal)', choices:['Wood','Plastic','Iron (metal)','Rubber'], hint:'Think of fridge magnets clinging to your fridge door.' },
+  { cat:'science', emoji:'🌙', q:'What causes day and night on Earth?', a:'Earth spinning', choices:['The sun turning off','Earth orbiting the sun','Earth spinning','The moon blocking sun'], hint:'It takes 24 hours for one full spin!' },
+  { cat:'science', emoji:'❄️', q:'At what temperature does water freeze (in Celsius)?', a:'0°C', choices:['10°C','0°C','-10°C','5°C'], hint:'Below this it turns to ice!' },
+  { cat:'science', emoji:'🌈', q:'How many colors are in a rainbow?', a:'7 colors', choices:['5 colors','6 colors','7 colors','8 colors'], hint:'Red, orange, yellow, green, blue, indigo, violet!' },
+  { cat:'science', emoji:'🦴', q:'How many bones does an adult human have?', a:'206 bones', choices:['100 bones','150 bones','206 bones','300 bones'], hint:'Babies actually have more — some fuse together as you grow!' },
+];
+
+let cards = [...ALL_CARDS];
+let currentIdx = 0;
+let correct = 0, wrong = 0, streak = 0, answered = false;
+let currentCat = 'all';
+let mathSubMode = 'add'; // 'add' or 'subtract'
+let currentMathProblem = null; // { q, a, emoji }
+
+function randInt(min, max) {
+  return Math.floor(Math.random() * (max - min + 1)) + min;
+}
+
+function generateMathProblem(type) {
+  const addEmojis = ['🍎','🌟','🎈','🍕','🐣','🪙','🦋','🌈','⭐','🎯','🍦','🐸'];
+  const emoji = addEmojis[randInt(0, addEmojis.length - 1)];
+  if (type === 'add') {
+    const a = randInt(0, 20);
+    const b = randInt(0, 20 - a);
+    return { emoji, q: `${a} + ${b} = ?`, a: String(a + b) };
+  } else {
+    const a = randInt(0, 20);
+    const b = randInt(0, a);
+    return { emoji, q: `${a} − ${b} = ?`, a: String(a - b) };
+  }
+}
+
+function setMathSub(sub, btn) {
+  mathSubMode = sub;
+  document.querySelectorAll('.math-sub-btn').forEach(b => b.classList.remove('active'));
+  btn.classList.add('active');
+  // Reset scores and load new problem
+  correct = 0; wrong = 0; streak = 0;
+  updateScore();
+  loadMathCard();
+}
+
+function loadMathCard() {
+  answered = false;
+  currentMathProblem = generateMathProblem(mathSubMode);
+
+  // Show card in math mode (no flip needed — just show question)
+  document.getElementById('cardInner').classList.remove('flipped');
+  document.getElementById('cardScene').style.cursor = 'default';
+  document.getElementById('cardScene').onclick = null;
+  document.getElementById('cardEmoji').textContent = currentMathProblem.emoji;
+  document.getElementById('cardQuestion').textContent = currentMathProblem.q;
+  document.getElementById('cardAnswer').textContent = currentMathProblem.a;
+  document.getElementById('cardHint').textContent = '';
+  document.getElementById('progressFill').style.width = '0%';
+
+  // Show type-in, hide multiple choice
+  document.getElementById('choices').style.display = 'none';
+  document.getElementById('typeAnswerWrap').style.display = 'flex';
+
+  const input = document.getElementById('typeAnswerInput');
+  const reveal = document.getElementById('typeReveal');
+  const submitBtn = document.getElementById('typeSubmitBtn');
+  input.value = '';
+  input.className = 'type-answer-input';
+  input.disabled = false;
+  reveal.style.display = 'none';
+  submitBtn.disabled = false;
+  submitBtn.textContent = 'Check ✅';
+
+  // Auto-focus input
+  setTimeout(() => input.focus(), 100);
+}
+
+function submitTypedAnswer() {
+  if (answered) return;
+  const input = document.getElementById('typeAnswerInput');
+  const val = input.value.trim();
+  if (val === '') return;
+
+  answered = true;
+  const isCorrect = val === currentMathProblem.a;
+  const submitBtn = document.getElementById('typeSubmitBtn');
+  const reveal = document.getElementById('typeReveal');
+
+  input.disabled = true;
+  submitBtn.disabled = true;
+
+  if (isCorrect) {
+    input.classList.add('correct-ans');
+    correct++;
+    streak++;
+    showFeedback(true);
+    submitBtn.textContent = 'Next ➡';
+    submitBtn.disabled = false;
+    submitBtn.onclick = () => { submitBtn.onclick = submitTypedAnswer; loadMathCard(); };
+  } else {
+    input.classList.add('wrong-ans');
+    wrong++;
+    streak = 0;
+    showFeedback(false);
+    reveal.textContent = `The answer is ${currentMathProblem.a}`;
+    reveal.style.display = 'block';
+    submitBtn.textContent = 'Next ➡';
+    submitBtn.disabled = false;
+    submitBtn.onclick = () => { submitBtn.onclick = submitTypedAnswer; loadMathCard(); };
+  }
+  updateScore();
+}
+
+function shuffle(arr) {
+  for(let i=arr.length-1;i>0;i--){
+    const j=Math.floor(Math.random()*(i+1));
+    [arr[i],arr[j]]=[arr[j],arr[i]];
+  }
+  return arr;
+}
+
+function filterCards(cat) {
+  currentCat = cat;
+
+  // Show/hide math submode buttons
+  const submode = document.getElementById('mathSubmode');
+  if (cat === 'math') {
+    submode.classList.add('visible');
+    // Reset scores, load math card
+    correct = 0; wrong = 0; streak = 0;
+    updateScore();
+    document.getElementById('winScreen').classList.remove('show');
+    document.getElementById('cardArea').style.display = '';
+    loadMathCard();
+    return;
+  } else {
+    submode.classList.remove('visible');
+  }
+
+  cards = cat === 'all' ? [...ALL_CARDS] : ALL_CARDS.filter(c => c.cat === cat);
+  shuffle(cards);
+  currentIdx = 0;
+  correct = 0; wrong = 0; streak = 0;
+  updateScore();
+  document.getElementById('winScreen').classList.remove('show');
+  document.getElementById('cardArea').style.display = '';
+  loadCard();
+}
+
+document.querySelectorAll('.cat-btn').forEach(btn => {
+  btn.addEventListener('click', () => {
+    document.querySelectorAll('.cat-btn').forEach(b => b.classList.remove('active'));
+    btn.classList.add('active');
+    filterCards(btn.dataset.cat);
+  });
+});
+
+function loadCard() {
+  if(currentIdx >= cards.length) { showWin(); return; }
+  const card = cards[currentIdx];
+  answered = false;
+
+  // Restore normal flip behavior
+  document.getElementById('cardScene').style.cursor = 'pointer';
+  document.getElementById('cardScene').onclick = flipCard;
+
+  // Reset flip
+  document.getElementById('cardInner').classList.remove('flipped');
+  document.getElementById('cardEmoji').textContent = card.emoji;
+  document.getElementById('cardQuestion').textContent = card.q;
+  document.getElementById('cardAnswer').textContent = card.a;
+  document.getElementById('cardHint').textContent = '💡 ' + card.hint;
+
+  // Progress
+  const pct = (currentIdx / cards.length) * 100;
+  document.getElementById('progressFill').style.width = pct + '%';
+
+  // Show multiple choice, hide type-in
+  document.getElementById('choices').style.display = '';
+  document.getElementById('typeAnswerWrap').style.display = 'none';
+
+  // Build choices
+  const choicesDiv = document.getElementById('choices');
+  choicesDiv.innerHTML = '';
+  const shuffled = shuffle([...card.choices]);
+  shuffled.forEach(choice => {
+    const btn = document.createElement('button');
+    btn.className = 'choice-btn';
+    btn.textContent = choice;
+    btn.onclick = () => checkAnswer(choice, card.a, btn);
+    choicesDiv.appendChild(btn);
+  });
+}
+
+function flipCard() {
+  document.getElementById('cardInner').classList.toggle('flipped');
+}
+
+function checkAnswer(choice, correct_a, btn) {
+  if(answered) return;
+  answered = true;
+
+  const allBtns = document.querySelectorAll('.choice-btn');
+  allBtns.forEach(b => {
+    b.disabled = true;
+    if(b.textContent === correct_a) b.classList.add('correct-ans');
+  });
+
+  if(choice === correct_a) {
+    btn.classList.add('correct-ans');
+    correct++;
+    streak++;
+    showFeedback(true);
+  } else {
+    btn.classList.add('wrong-ans');
+    wrong++;
+    streak = 0;
+    showFeedback(false);
+  }
+  updateScore();
+
+  setTimeout(() => nextCard(), 1400);
+}
+
+function showFeedback(isGood) {
+  const f = document.getElementById('feedback');
+  const msgs = isGood
+    ? ['🎉 Awesome!','⭐ Correct!','🔥 Nailed it!','🌟 Great job!','💪 Yes!!']
+    : ['😬 Oops! Try again!','💡 Good try!','🤔 Not quite!','😄 Almost!'];
+  f.textContent = msgs[Math.floor(Math.random()*msgs.length)];
+  f.className = 'feedback show ' + (isGood ? 'good' : 'bad');
+  setTimeout(() => f.classList.remove('show'), 1100);
+  if(isGood && streak > 2) launchConfetti(10);
+}
+
+function updateScore() {
+  document.getElementById('correctCount').textContent = correct;
+  document.getElementById('wrongCount').textContent = wrong;
+  document.getElementById('streakCount').textContent = streak;
+}
+
+function nextCard() {
+  if (currentCat === 'math') { loadMathCard(); return; }
+  currentIdx++;
+  loadCard();
+}
+
+function prevCard() {
+  if (currentCat === 'math') { loadMathCard(); return; }
+  if(currentIdx > 0) { currentIdx--; loadCard(); }
+}
+
+// Enter key submits type-in answer
+document.addEventListener('keydown', e => {
+  if (e.key === 'Enter' && currentCat === 'math') {
+    const submitBtn = document.getElementById('typeSubmitBtn');
+    if (!submitBtn.disabled) submitBtn.click();
+  }
+});
+
+function showWin() {
+  document.getElementById('cardArea').style.display = 'none';
+  const winScreen = document.getElementById('winScreen');
+  winScreen.classList.add('show');
+
+  const total = correct + wrong;
+  const pct = total ? Math.round((correct / total) * 100) : 0;
+  const stars = pct >= 80 ? '⭐⭐⭐' : pct >= 50 ? '⭐⭐' : '⭐';
+  document.getElementById('winStars').textContent = stars;
+  document.getElementById('winScore').textContent = `You got ${correct} out of ${total} right! (${pct}%)`;
+
+  launchConfetti(40);
+}
+
+function restartGame() {
+  document.getElementById('winScreen').classList.remove('show');
+  document.getElementById('cardArea').style.display = '';
+  filterCards(currentCat);
+}
+
+function launchConfetti(n) {
+  const colors = ['#FF6B6B','#4ECDC4','#FFE066','#A855F7','#22C55E','#5B9BD5'];
+  for(let i=0;i<n;i++) {
+    setTimeout(() => {
+      const el = document.createElement('div');
+      el.className = 'confetti-piece';
+      el.style.left = Math.random()*100 + 'vw';
+      el.style.background = colors[Math.floor(Math.random()*colors.length)];
+      el.style.animationDuration = (1.5+Math.random()*2)+'s';
+      el.style.animationDelay = (Math.random()*0.5)+'s';
+      el.style.transform = `rotate(${Math.random()*360}deg)`;
+      document.body.appendChild(el);
+      setTimeout(() => el.remove(), 3000);
+    }, i*60);
+  }
+}
+
+// Init
+shuffle(cards);
+loadCard();
+
+// ===== MODE SWITCHING =====
+function switchMode(mode) {
+  const dinnerEl = document.getElementById('dinnerSection');
+  const historyEl = document.getElementById('historySection');
+  const title = document.getElementById('mainTitle');
+  const subtitle = document.getElementById('mainSubtitle');
+
+  // hide everything
+  document.getElementById('scoreboard').style.display = 'none';
+  document.getElementById('categoriesDiv').style.display = 'none';
+  document.getElementById('mathSubmode').style.display = 'none';
+  document.getElementById('cardArea').style.display = 'none';
+  document.getElementById('winScreen').style.display = 'none';
+  dinnerEl.style.display = 'none';
+  historyEl.style.display = 'none';
+
+  document.querySelectorAll('.mode-btn').forEach(b => b.classList.remove('active'));
+
+  if (mode === 'dinner') {
+    dinnerEl.style.display = 'flex';
+    document.getElementById('modeDinner').classList.add('active');
+    title.textContent = '🍽️ Dinner Table Talk';
+    subtitle.textContent = 'Pull a card and talk it out together!';
+    loadDinnerCard();
+  } else if (mode === 'history') {
+    historyEl.style.display = 'flex';
+    document.getElementById('modeHistory').classList.add('active');
+    title.textContent = '📜 History Lessons';
+    subtitle.textContent = 'Read the lesson, then take the quiz!';
+    loadHistoryCard();
+  } else {
+    document.getElementById('scoreboard').style.display = '';
+    document.getElementById('categoriesDiv').style.display = '';
+    document.getElementById('cardArea').style.display = '';
+    document.getElementById('modeGame').classList.add('active');
+    title.textContent = '🧠 Brain Blast! ✨';
+    subtitle.textContent = 'Tap a card to learn, then pick the right answer!';
+  }
+}
+
+// ===== DINNER TABLE DATA =====
+const ALL_DINNER = [
+
+  { type:'imaginative', emoji:'🦕', q:'If you could have any dinosaur as a pet, which one would you choose and what would you name it?', prompt:'Everyone shares their answer!' },
+  { type:'imaginative', emoji:'🏠', q:'If you could design your dream bedroom, what would be in it? Would it have a slide? A pool? A zipline?', prompt:'Draw it in your mind first...' },
+  { type:'imaginative', emoji:'🌍', q:'If you could wake up tomorrow in any country in the world, where would you go and what would you eat for breakfast?', prompt:'No wrong answers here!' },
+  { type:'imaginative', emoji:'🦸', q:'If you had ONE superpower for a whole day, what would you pick and what would you do with it?', prompt:'Think big!' },
+  { type:'imaginative', emoji:'🌊', q:'Would you rather explore outer space or the deepest part of the ocean? What do you think you would find?', prompt:'What sounds more exciting?' },
+  { type:'imaginative', emoji:'🎪', q:'If you could invent a new holiday, what would it celebrate and how would people celebrate it?', prompt:'What would the traditions be?' },
+  { type:'imaginative', emoji:'🧞', q:'A genie gives you three wishes — but you cannot wish for more wishes! What do you wish for?', prompt:'Think carefully...' },
+  { type:'imaginative', emoji:'🚂', q:'If you could build any vehicle to travel in — a submarine, a rocket, a flying castle, anything — what would yours look like?', prompt:'What would you name it?' },
+  { type:'imaginative', emoji:'🌈', q:'If you could add one new colour to the world that does not exist yet, what would it look like and what would you call it?', prompt:'Where would you see it?' },
+  { type:'imaginative', emoji:'🏝️', q:'You are stranded on a beautiful island for one month and can bring three things. What do you bring?', prompt:'You have food and water already — what else?' },
+  { type:'imaginative', emoji:'🧪', q:'You have invented a potion that does one magical thing. What does it do and who would you give it to?', prompt:'Only enough for one person!' },
+  { type:'imaginative', emoji:'🐾', q:'If you could talk to animals for one hour, which three animals would you have a conversation with and what would you ask them?', prompt:'What do you think they would say back?' },
+  { type:'imaginative', emoji:'📺', q:'You get to star in your own TV show. What is it called, what is it about, and who else in the family is in it?', prompt:'What would happen in the first episode?' },
+  { type:'imaginative', emoji:'🌙', q:'Imagine you discovered a secret door in your house that leads somewhere magical. Where does it go?', prompt:'What is the first thing you see?' },
+  { type:'imaginative', emoji:'🏆', q:'If you could be the best in the whole world at one skill or talent, what would you choose?', prompt:'How would you use that talent?' },
+  { type:'imaginative', emoji:'🤖', q:'You can design a robot that does one job for you forever. What job does it do and what does it look like?', prompt:'Give it a name!' },
+  { type:'imaginative', emoji:'🎨', q:'If you could paint a giant mural on the outside of your school or house, what would you paint?', prompt:'What colors would you use?' },
+  { type:'imaginative', emoji:'🦄', q:'If mythical creatures were real and could be found in the wild, which one would you most want to see?', prompt:'Where would you go to find it?' },
+  { type:'silly', emoji:'🐸', q:'If animals could talk, which animal do you think would be the most annoying to have a conversation with?', prompt:'Why that animal?' },
+  { type:'silly', emoji:'🍝', q:'If you had to eat only ONE food for the rest of your life, what would you pick?', prompt:'Choose wisely — you are stuck with it!' },
+  { type:'silly', emoji:'🤖', q:'If our family was a band, what instrument would each person play and what would the band be called?', prompt:'Dad gets to be the tambourine...' },
+  { type:'silly', emoji:'🦆', q:'Would you rather speak in quacks like a duck for a whole day, or walk like a penguin for a whole week?', prompt:'You have to pick one!' },
+  { type:'silly', emoji:'🧦', q:'If socks could talk, what do you think your socks would say about you today?', prompt:'They have had a long day...' },
+  { type:'silly', emoji:'🌮', q:'What is the weirdest food combination you can imagine that you think might actually taste good?', prompt:'Extra points for creativity!' },
+  { type:'silly', emoji:'👻', q:'If our house was haunted by a friendly ghost, what do you think it would do all day while we are out?', prompt:'What mischief would it get up to?' },
+  { type:'silly', emoji:'🐶', q:'If your pet could speak for just one minute, what do you think it would say first?', prompt:'Be honest — it might be embarrassing!' },
+  { type:'silly', emoji:'🪑', q:'If every chair in the world disappeared overnight, how would life be different?', prompt:'Where would we sit at dinner??' },
+  { type:'silly', emoji:'🧀', q:'Scientists discover that cheese is actually alive and has feelings. What happens next?', prompt:'Does pizza become illegal?' },
+  { type:'silly', emoji:'☁️', q:'If clouds were made of something other than water vapor — like cotton candy or mashed potatoes — what would the world be like?', prompt:'What would rain be?' },
+  { type:'silly', emoji:'🎩', q:'A magician comes to dinner and offers to make one person at the table disappear for 30 seconds. Who volunteers and where do they go?', prompt:'Where do they reappear from?' },
+  { type:'silly', emoji:'🦷', q:'If your teeth could text you messages, what would they be saying right now?', prompt:'Probably complaints...' },
+  { type:'silly', emoji:'🌵', q:'Would you rather have cactus arms, noodle legs, or a trumpet for a nose?', prompt:'You must pick one. No take-backs.' },
+  { type:'silly', emoji:'🐌', q:'You have to race a snail across the garden. The catch: you can only move sideways. Do you win?', prompt:'What is your strategy?' },
+  { type:'silly', emoji:'🍌', q:'Bananas have been elected president of the fruit bowl. What is their first law?', prompt:'What do the grapes think?' },
+  { type:'silly', emoji:'👟', q:'If your left shoe and your right shoe had an argument, what would they be arguing about?', prompt:'Who wins?' },
+  { type:'silly', emoji:'🌙', q:'The moon calls and says it is feeling lonely up there. What do you say to cheer it up?', prompt:'What does it say back?' },
+  { type:'deep', emoji:'💛', q:'What is something that someone did for you recently that made you feel really happy or loved?', prompt:'It can be something small.' },
+  { type:'deep', emoji:'🌟', q:'What is one thing you are really proud of yourself for this week, even if nobody else noticed?', prompt:'Everyone shares one thing.' },
+  { type:'deep', emoji:'🤝', q:'What does it mean to be a really good friend? Can you think of someone who is a good friend to you?', prompt:'What makes them special?' },
+  { type:'deep', emoji:'😔', q:'Is there anything that has been worrying you lately? We are all here to listen.', prompt:'No pressure — share what feels okay.' },
+  { type:'deep', emoji:'🌈', q:'If you could change one thing about the world to make it better for kids, what would it be?', prompt:'Dream big — what matters most to you?' },
+  { type:'deep', emoji:'❤️', q:'What is something you wish more people knew about you?', prompt:'This is a safe space!' },
+  { type:'deep', emoji:'🔭', q:'When you grow up, what kind of person do you want to be — not job, but person? Kind? Brave? Funny?', prompt:'What values matter to you?' },
+  { type:'deep', emoji:'🙏', q:'What is something you are really grateful for right now that you do not say out loud very often?', prompt:'Take a moment to think...' },
+  { type:'deep', emoji:'💪', q:'What is the hardest thing you have ever done, and how did you get through it?', prompt:'Everyone is brave in different ways.' },
+  { type:'deep', emoji:'🌱', q:'If you could give your younger self one piece of advice, what would it be?', prompt:'What do you wish you had known sooner?' },
+  { type:'deep', emoji:'😊', q:'What is one small thing that happened today or this week that made you smile — even for just a second?', prompt:'Even tiny things count!' },
+  { type:'deep', emoji:'🎁', q:'What is the best gift someone has ever given you — and it does not have to be something you can unwrap?', prompt:'Could be a hug, a lesson, a moment...' },
+  { type:'deep', emoji:'🌍', q:'If you could do one thing to make our neighbourhood or community a better place, what would it be?', prompt:'Big or small, all ideas welcome.' },
+  { type:'deep', emoji:'🤔', q:'What is something you used to believe that you no longer believe now? What changed your mind?', prompt:'It is okay to change your mind!' },
+  { type:'deep', emoji:'👂', q:'When you have a problem, who is the first person you want to talk to, and why do you trust them?', prompt:'What makes that person easy to talk to?' },
+  { type:'deep', emoji:'🌙', q:'What does the end of a really good day feel like to you? What needs to happen for it to feel good?', prompt:'Everyone might have a different answer.' },
+  { type:'deep', emoji:'💭', q:'Is there something you have always wanted to learn or try but have not yet? What is stopping you?', prompt:'Maybe we can help make it happen!' },
+  { type:'deep', emoji:'🏡', q:'What is your favourite thing about our family? What makes us special?', prompt:'Warm hearts at the table tonight.' },
+  { type:'favorites', emoji:'🎬', q:'What is your all-time favourite movie and which character would you most want to be?', prompt:'Tell us why!' },
+  { type:'favorites', emoji:'📚', q:'What is the best book you have ever read? What made it so good?', prompt:'Would you recommend it to us?' },
+  { type:'favorites', emoji:'🎮', q:'If you could only play one game for the rest of the year — video game, board game, or outdoor game — what would it be?', prompt:'Just one!' },
+  { type:'favorites', emoji:'🍕', q:'Rank these from best to worst: pizza, tacos, burgers, pasta. Go!', prompt:'Defend your choices!' },
+  { type:'favorites', emoji:'🎵', q:'What song, when it comes on, immediately makes you feel happy? What is your walk-out song?', prompt:'Everyone hum or sing a few seconds!' },
+  { type:'favorites', emoji:'🌅', q:'What is your favourite time of day and why? Morning, afternoon, evening, or night?', prompt:'What makes that time special?' },
+  { type:'favorites', emoji:'🍦', q:'What is your absolute favourite meal that someone in this family makes? What makes it so good?', prompt:'Whoever made it gets a round of applause!' },
+  { type:'favorites', emoji:'🏖️', q:'Best holiday or trip you have ever been on — where was it and what made it unforgettable?', prompt:'What was the highlight moment?' },
+  { type:'favorites', emoji:'😂', q:'What is the funniest thing that has ever happened to you or our family? The story that always makes everyone laugh?', prompt:'Tell it again!' },
+  { type:'favorites', emoji:'🎨', q:'What is your favourite thing to do when you have totally free time and no plans?', prompt:'No wrong answers — whatever makes you happiest!' },
+  { type:'favorites', emoji:'🐾', q:'Favourite animal ever — one you have seen in real life or would love to see. Why that one?', prompt:'What is so special about it?' },
+  { type:'favorites', emoji:'🌍', q:'If you could only eat food from one country for the rest of your life, which country would you choose?', prompt:'Think about breakfast, lunch AND dinner!' },
+  { type:'favorites', emoji:'📺', q:'What TV show or YouTube channel could you watch forever and never get bored of?', prompt:'What is it about it that you love?' },
+  { type:'favorites', emoji:'🌳', q:'Favourite season — spring, summer, autumn or winter — and what do you love most about it?', prompt:'Everyone ranks all four!' },
+  { type:'favorites', emoji:'🎂', q:'Best birthday you have ever had. What made it so special?', prompt:'What would your perfect birthday look like?' },
+  { type:'favorites', emoji:'🌮', q:'What is the single best thing you have ever eaten in your entire life? Where were you and who made it?', prompt:'Can we recreate it?' },
+  { type:'favorites', emoji:'🎡', q:'Best day out you have ever had as a family. What made it so perfect?', prompt:'Could we do it again?' },
+  { type:'favorites', emoji:'👟', q:'Favourite item of clothing you own right now. Why does it make you feel good?', prompt:'When do you wear it?' },
+  { type:'story', emoji:'🌙', q:'Start a story with these words: "One night, I was looking out my window when I noticed the moon had turned purple..."', prompt:'Take turns adding one sentence each!' },
+  { type:'story', emoji:'🧳', q:'You find a mysterious old suitcase under your bed. It is locked. What is inside? How do you open it?', prompt:'Build the story together around the table.' },
+  { type:'story', emoji:'🗺️', q:'A treasure map appears under your dinner plate tonight. Where does it lead? What do you do first?', prompt:'You have until bedtime to find it!' },
+  { type:'story', emoji:'🐉', q:'A tiny dragon lands on the windowsill and taps on the glass. It looks like it needs help. What do you do?', prompt:'What does the dragon want?' },
+  { type:'story', emoji:'⏰', q:'You wake up and realize you are stuck living today all over again — it is Groundhog Day! What do you do differently?', prompt:'Would you tell anyone?' },
+  { type:'story', emoji:'🚀', q:'"The spaceship landed in our garden at 7:32 in the morning. We were still in our pyjamas when the door opened..." What happens next?', prompt:'Everyone adds one sentence in turn!' },
+  { type:'story', emoji:'🍄', q:'You shrink down to the size of a button while playing in the garden. The grass is a forest. What is your plan to get back to normal?', prompt:'What do you encounter first?' },
+  { type:'story', emoji:'🌊', q:'A message in a bottle washes up on the beach. Inside is a note that says only: "Come quickly. Bring biscuits." Who sent it?', prompt:'Build the adventure together!' },
+  { type:'story', emoji:'📖', q:'"The library was closing, but the last book on the shelf was glowing faintly. When I touched it, the words started moving..."', prompt:'What does the book say? Where does it take you?' },
+  { type:'story', emoji:'🎭', q:'Every person at the table secretly has a double — an exact copy — living somewhere on the other side of the world. What is your double doing right now?', prompt:'Tell us about their day!' },
+  { type:'story', emoji:'🌿', q:'You plant a seed in the garden and go to bed. In the morning it has grown into something enormous. What is it?', prompt:'What grows on it?' },
+  { type:'story', emoji:'🧊', q:'"We were halfway across the frozen lake when we heard the ice beginning to crack. That is when we noticed the footprints..."', prompt:'Whose footprints? What do you do?' },
+  { type:'story', emoji:'🔦', q:'The power goes out. You find a torch and start exploring the house. In the attic you find a box you have never seen before. What is in it?', prompt:'Does it change everything?' },
+  { type:'story', emoji:'🎈', q:'A single red balloon floats down and lands in front of you. Tied to it is a tiny envelope with your name on it. What is inside?', prompt:'Who sent it and why?' },
+  { type:'story', emoji:'🤫', q:'"The animals in the neighbourhood had been meeting secretly for months. Tonight, we finally found out why..."', prompt:'What were they planning?' },
+  { type:'story', emoji:'🐋', q:'"We were sailing when the whale surfaced right next to our boat. But it was not a normal whale — it had windows."', prompt:'What is inside? Who lives there?' },
+  { type:'story', emoji:'🗝️', q:'You find a very old key at the back of a drawer. It has a tag that reads: DO NOT USE UNTIL READY. Are you ready?', prompt:'What does it open?' },
+  { type:'story', emoji:'🌩️', q:'"The lightning hit the old oak tree and instead of splitting it, opened a door in the trunk. Light poured out from inside."', prompt:'Who goes in first?' },
+];
+
+let dinnerCards = [...ALL_DINNER];
+let dinnerIdx = 0;
+let dinnerFilter = 'all';
+
+function filterDinner(type, btn) {
+  document.querySelectorAll('.d-filter-btn').forEach(b => b.classList.remove('active'));
+  btn.classList.add('active');
+  dinnerFilter = type;
+  dinnerCards = type === 'all' ? [...ALL_DINNER] : ALL_DINNER.filter(c => c.type === type);
+  dinnerIdx = 0;
+  loadDinnerCard();
+}
+
+function loadDinnerCard() {
+  if (!dinnerCards.length) return;
+  const card = dinnerCards[dinnerIdx];
+  const el = document.getElementById('dinnerCard');
+
+  el.classList.remove('swoosh-in');
+  void el.offsetWidth; // reflow
+  el.classList.add('swoosh-in');
+
+  document.getElementById('dinnerEmoji').textContent = card.emoji;
+  document.getElementById('dinnerQuestion').textContent = card.q;
+  document.getElementById('dinnerPrompt').textContent = card.prompt;
+
+  const tag = document.getElementById('dinnerTag');
+  tag.textContent = card.type.charAt(0).toUpperCase() + card.type.slice(1);
+  tag.className = 'dinner-tag ' + card.type;
+
+  document.getElementById('dinnerCounter').textContent =
+    'Card ' + (dinnerIdx + 1) + ' of ' + dinnerCards.length;
+}
+
+function nextDinner() {
+  dinnerIdx = (dinnerIdx + 1) % dinnerCards.length;
+  loadDinnerCard();
+}
+
+function prevDinner() {
+  dinnerIdx = (dinnerIdx - 1 + dinnerCards.length) % dinnerCards.length;
+  loadDinnerCard();
+}
+
+function shuffleDinner() {
+  shuffle(dinnerCards);
+  dinnerIdx = 0;
+  loadDinnerCard();
+}
+
+// ===== HISTORY SECTION =====
+const ALL_HISTORY = [
+  // ANCIENT
+  {
+    era:'ancient', emoji:'🏛️', title:'Ancient Egypt & the Pyramids',
+    lesson:`<b>Ancient Egypt</b> was one of the world's first great civilisations, lasting over 3,000 years along the Nile River in Africa.\n\nThe <b>pharaohs</b> were god-kings who ruled Egypt. When they died, they were buried in massive stone tombs called <b>pyramids</b>. The Great Pyramid at Giza took an estimated 20,000 workers and 20 years to build — using over 2 million stone blocks!\n\nEgyptians invented one of the first writing systems called <b>hieroglyphics</b> — pictures that represented words and sounds. They also made paper from a plant called <b>papyrus</b>, and developed early medicine, astronomy, and architecture that influenced the whole world.`,
+    q:'What were the giant stone tombs of Egyptian pharaohs called?',
+    choices:['Coliseums','Pyramids','Temples','Ziggurats'], a:'Pyramids',
+    bonus:'The Great Pyramid was the tallest man-made structure on Earth for over 3,800 years!'
+  },
+  {
+    era:'ancient', emoji:'🏺', title:'Ancient Greece — Democracy & Ideas',
+    lesson:`<b>Ancient Greece</b> (around 500–300 BC) gave the world some of its most important ideas — including <b>democracy</b>, the idea that citizens should have a say in how they are governed. Athens was the first city to try it.\n\nGreek thinkers called <b>philosophers</b> asked big questions about life, truth, and justice. <b>Socrates, Plato,</b> and <b>Aristotle</b> shaped how people think to this day.\n\nThe Greeks also created the <b>Olympic Games</b> in 776 BC to honour the god Zeus, held every four years in the city of Olympia. And their stories — myths about gods like Zeus, Athena, and Poseidon — are still told all over the world.`,
+    q:'Which ancient city is credited with inventing democracy?',
+    choices:['Rome','Sparta','Athens','Babylon'], a:'Athens',
+    bonus:'The word "democracy" comes from Greek: demos (people) + kratos (power).'
+  },
+  {
+    era:'ancient', emoji:'🦁', title:'The Roman Empire',
+    lesson:`At its peak, the <b>Roman Empire</b> stretched from Britain to Egypt and was home to 50 million people. It was one of the most powerful empires in history.\n\nRomans were brilliant engineers. They built <b>straight roads</b> (many still exist today), <b>aqueducts</b> that carried water into cities, and massive structures like the <b>Colosseum</b> — an arena where 50,000 people watched gladiator battles.\n\nRome started as a <b>republic</b> where senators voted on laws, then became an empire ruled by emperors. <b>Julius Caesar</b> was one of Rome's most famous leaders — but he was assassinated in 44 BC by senators who feared he had too much power.\n\nThe Roman Empire eventually split and fell in 476 AD, but Roman law, language (Latin), and culture shaped almost every country in Europe.`,
+    q:'What was the large arena in Rome where gladiators fought called?',
+    choices:['The Pantheon','The Forum','The Colosseum','The Acropolis'], a:'The Colosseum',
+    bonus:'Latin — the language of Rome — is the root of Spanish, French, Italian, Portuguese, and Romanian.'
+  },
+  {
+    era:'ancient', emoji:'🌿', title:'Ancient China — Inventions That Changed the World',
+    lesson:`Ancient China produced some of the most important inventions in human history. The <b>four great inventions</b> were paper, printing, gunpowder, and the compass — all of which spread across the world and changed civilisation forever.\n\nChina was also famous for the <b>Silk Road</b> — a network of trade routes connecting China to the Middle East and Europe — along which silk, spices, ideas, and diseases all travelled.\n\nThe <b>Great Wall of China</b> was built over many centuries to protect against northern invasions. It stretches over 13,000 miles. China's dynasties (ruling families) lasted for thousands of years, with emperors holding absolute power over one of the world's most populated nations.`,
+    q:'Which of these was NOT one of ancient China\'s four great inventions?',
+    choices:['Paper','Gunpowder','The wheel','The compass'], a:'The wheel',
+    bonus:'The wheel was invented in Mesopotamia (modern-day Iraq), not China!'
+  },
+  {
+    era:'ancient', emoji:'🌙', title:'Mesopotamia — The First Civilisation',
+    lesson:`Between the Tigris and Euphrates rivers in what is now Iraq, the world's <b>first civilisation</b> emerged around 3500 BC. The region was called <b>Mesopotamia</b>, meaning "land between the rivers."\n\nThe <b>Sumerians</b> here invented the world's first writing system — called <b>cuneiform</b> — pressing wedge shapes into clay tablets. They also invented the wheel, early mathematics, and the first legal code.\n\n<b>Babylon</b> was the greatest city in ancient Mesopotamia. Its ruler <b>Hammurabi</b> created one of history's first written law codes around 1750 BC — with 282 laws carved into a stone pillar. Some were harsh, but the idea that laws should be written down and apply to everyone was revolutionary.`,
+    q:'What was the world\'s first writing system, invented by the Sumerians, called?',
+    choices:['Hieroglyphics','Cuneiform','Latin','Sanskrit'], a:'Cuneiform',
+    bonus:'The word "cuneiform" comes from the Latin word for wedge-shaped.'
+  },
+  // MEDIEVAL
+  {
+    era:'medieval', emoji:'🏰', title:'Knights, Castles & the Middle Ages',
+    lesson:`The <b>Middle Ages</b> (roughly 500–1500 AD) were the centuries after Rome fell. Europe was divided into kingdoms, and most people were farmers who worked land owned by lords in a system called <b>feudalism</b>.\n\n<b>Knights</b> were armoured warriors on horseback who swore loyalty to a lord. They followed a code of honour called <b>chivalry</b> — protecting the weak, being brave, and being loyal.\n\n<b>Castles</b> were built as fortresses and seats of power. They evolved from simple wooden structures to massive stone fortresses with moats, drawbridges, and towers. The <b>Catholic Church</b> was extremely powerful — cathedrals were the biggest buildings in any town, and the Pope could influence even kings.`,
+    q:'What was the code of honour that medieval knights were expected to follow?',
+    choices:['Feudalism','Chivalry','Crusading','Sovereignty'], a:'Chivalry',
+    bonus:'The word "chivalry" comes from the French word cheval — meaning horse!'
+  },
+  {
+    era:'medieval', emoji:'⚔️', title:'The Crusades',
+    lesson:`From 1096 to 1291, Christian armies from Europe launched a series of military campaigns called the <b>Crusades</b> to take control of Jerusalem and the Holy Land, which was under Muslim rule.\n\nPope Urban II launched the First Crusade in 1095 with a famous speech calling Christians to fight. Thousands of knights, nobles, and peasants marched thousands of miles.\n\nThe Crusades were brutal and complicated. They caused enormous suffering on all sides. But they also opened up <b>trade and contact</b> between Europe and the Islamic world — Europeans brought back new foods, mathematics, medicine, and ideas that helped spark the Renaissance.\n\n<b>Saladin</b>, the Muslim leader who recaptured Jerusalem in 1187, was respected even by his enemies for his honour and mercy.`,
+    q:'Who launched the First Crusade with a famous speech in 1095?',
+    choices:['Saladin','King Richard I','Pope Urban II','Emperor Charlemagne'], a:'Pope Urban II',
+    bonus:'The word "crusade" comes from the Latin crux — meaning cross.'
+  },
+  {
+    era:'medieval', emoji:'💀', title:'The Black Death',
+    lesson:`In 1347, a devastating plague known as the <b>Black Death</b> swept across Europe, Asia, and the Middle East. It was caused by the bacterium <i>Yersinia pestis</i>, spread mostly by fleas on rats.\n\nIn just a few years, the Black Death killed an estimated <b>30–60% of Europe's population</b> — tens of millions of people. Entire villages were wiped out. People had no idea what caused it or how to stop it.\n\nDespite its horror, the Black Death caused huge changes. With so many people dead, <b>surviving workers could demand better pay</b> and conditions. It weakened the feudal system and helped break down old social structures. It also pushed people to think more about medicine and the natural world — contributing eventually to the Scientific Revolution.`,
+    q:'Roughly what fraction of Europe\'s population was killed by the Black Death?',
+    choices:['1 in 10','1 in 3 to 1 in 2','1 in 100','Almost everyone'], a:'1 in 3 to 1 in 2',
+    bonus:'The Black Death reached Europe via merchant ships from Central Asia, arriving first in Sicily in 1347.'
+  },
+  {
+    era:'medieval', emoji:'🧭', title:'The Age of Exploration',
+    lesson:`In the 1400s and 1500s, European sailors began venturing beyond known waters in search of new trade routes and lands. This era is called the <b>Age of Exploration</b>.\n\nPortugal led the way, with explorers like <b>Bartolomeu Dias</b> rounding the tip of Africa and <b>Vasco da Gama</b> reaching India by sea in 1498.\n\n<b>Christopher Columbus</b>, sailing for Spain, reached the Americas in 1492 — though he believed he had reached Asia. This began centuries of European contact with the Americas.\n\n<b>Ferdinand Magellan's</b> expedition (1519–1522) was the first to circumnavigate the entire globe, proving once and for all that the Earth is round. These voyages opened up global trade — but also led to the colonisation and suffering of millions of indigenous people around the world.`,
+    q:'Which explorer\'s expedition was the first to sail all the way around the globe?',
+    choices:['Christopher Columbus','Vasco da Gama','Ferdinand Magellan','Francis Drake'], a:'Ferdinand Magellan',
+    bonus:'Magellan himself was killed in the Philippines — his crew completed the journey without him!'
+  },
+  {
+    era:'medieval', emoji:'📖', title:'The Renaissance — A Rebirth of Ideas',
+    lesson:`The <b>Renaissance</b> (meaning "rebirth" in French) began in Italy around the 1300s and spread across Europe through the 1600s. It was a flowering of art, science, and human curiosity.\n\nRenaissance thinkers looked back to ancient Greece and Rome for inspiration. They believed in <b>humanism</b> — the idea that humans matter, that we can learn about the world through observation, and that individuals can achieve great things.\n\n<b>Leonardo da Vinci</b> painted the Mona Lisa, designed flying machines, and studied anatomy. <b>Michelangelo</b> painted the Sistine Chapel ceiling. <b>Galileo</b> pointed a telescope at the sky and confirmed that the Earth orbits the Sun.\n\n<b>Johannes Gutenberg's</b> printing press (1440s) made books affordable for the first time, spreading ideas faster than ever before.`,
+    q:'What does the word "Renaissance" mean?',
+    choices:['Rebellion','Revolution','Rebirth','Religion'], a:'Rebirth',
+    bonus:'Before the printing press, a single book could take a monk a year to copy by hand!'
+  },
+  // MODERN
+  {
+    era:'modern', emoji:'⚙️', title:'The Industrial Revolution',
+    lesson:`Starting in Britain in the 1760s, the <b>Industrial Revolution</b> transformed how humans lived and worked. For thousands of years, most things were made by hand. Now machines powered by <b>steam engines</b> could do the work faster and cheaper.\n\nFactories sprung up in cities. Millions of people moved from farms to urban areas to work in mills and mines — often in dangerous conditions for very low pay. Children as young as five worked long shifts.\n\nThe revolution gave us <b>railways, steamships, telegraphs,</b> and eventually electricity. It made some people very rich and others very poor, creating the modern working class and the political movements that followed. It also began large-scale <b>pollution</b> and the burning of fossil fuels — changes that affect our climate today.`,
+    q:'Where did the Industrial Revolution begin?',
+    choices:['France','United States','Germany','Britain'], a:'Britain',
+    bonus:'The first public steam railway opened in England in 1825, running between Stockton and Darlington.'
+  },
+  {
+    era:'modern', emoji:'🌍', title:'World War I — The Great War',
+    lesson:`<b>World War I</b> (1914–1918) began after Archduke Franz Ferdinand of Austria was assassinated in Sarajevo. A chain of alliances pulled most of Europe — and eventually the world — into war.\n\nThe war was fought in muddy <b>trenches</b> stretching hundreds of miles across France and Belgium. For the first time, weapons like machine guns, poison gas, tanks, and airplanes were used on a massive scale.\n\nOver <b>17 million people</b> died — soldiers and civilians. The war ended with Germany's defeat and the <b>Treaty of Versailles</b>, which punished Germany so harshly that many historians believe it helped cause World War II just 20 years later.\n\nThe war destroyed four great empires: the Ottoman, Austro-Hungarian, Russian, and German.`,
+    q:'What event directly triggered the start of World War I?',
+    choices:['Germany invaded France','Britain blockaded Germany','Archduke Franz Ferdinand was assassinated','Russia declared war on Japan'], a:'Archduke Franz Ferdinand was assassinated',
+    bonus:'The Christmas Truce of 1914 saw soldiers from both sides briefly stop fighting and play football in No Man\'s Land.'
+  },
+  {
+    era:'modern', emoji:'💣', title:'World War II — The Deadliest War in History',
+    lesson:`<b>World War II</b> (1939–1945) was the deadliest conflict in human history, killing an estimated <b>70–85 million people</b> — more than half of them civilians.\n\nIt began when <b>Adolf Hitler's</b> Nazi Germany invaded Poland. Britain and France declared war. Germany occupied most of Europe, and Hitler carried out the <b>Holocaust</b> — the systematic murder of six million Jewish people and millions of others.\n\nJapan attacked the US naval base at <b>Pearl Harbor</b> in 1941, bringing America into the war. The tide turned after Germany's defeat at Stalingrad and the Allied <b>D-Day landings</b> in Normandy in 1944.\n\nThe war ended in Europe in May 1945 and in the Pacific in August 1945 after the US dropped <b>atomic bombs</b> on Hiroshima and Nagasaki — a turning point that began the nuclear age.`,
+    q:'What was the name of the Allied beach invasion of France in June 1944?',
+    choices:['Operation Overlord (D-Day)','The Blitz','The Battle of Britain','Operation Barbarossa'], a:'Operation Overlord (D-Day)',
+    bonus:'D-Day was the largest seaborne invasion in history — over 156,000 Allied troops crossed the English Channel in one day.'
+  },
+  {
+    era:'modern', emoji:'🚀', title:'The Space Race',
+    lesson:`After World War II, the USA and Soviet Union (USSR) became rival superpowers in a standoff called the <b>Cold War</b>. One of its most dramatic battlegrounds was space.\n\nThe USSR fired the first shot — launching <b>Sputnik</b>, the world's first artificial satellite, in 1957. In 1961, Soviet cosmonaut <b>Yuri Gagarin</b> became the first human in space.\n\nAmerica responded with the <b>Apollo programme</b>. On July 20, 1969, <b>Neil Armstrong</b> became the first human to walk on the Moon, saying: "That's one small step for man, one giant leap for mankind."\n\nThe Space Race drove extraordinary technological advances — satellite communications, computers, weather forecasting, and GPS all have roots in this era.`,
+    q:'Who was the first human to walk on the Moon?',
+    choices:['Buzz Aldrin','Yuri Gagarin','Neil Armstrong','John Glenn'], a:'Neil Armstrong',
+    bonus:'Yuri Gagarin\'s entire first spaceflight lasted just 108 minutes — one orbit of the Earth!'
+  },
+  {
+    era:'modern', emoji:'🧬', title:'The Science of DNA',
+    lesson:`In 1953, scientists <b>James Watson and Francis Crick</b> — using crucial X-ray data produced by <b>Rosalind Franklin</b> — described the structure of <b>DNA</b>: a double helix that carries the genetic instructions for all living things.\n\nDNA (deoxyribonucleic acid) is found in almost every cell of your body. It contains the <b>genetic code</b> that determines everything from your eye colour to how your organs develop.\n\nUnderstanding DNA transformed medicine. It led to <b>genetic testing, cancer treatments, forensic science</b> (DNA fingerprinting helps solve crimes), and most recently, <b>mRNA vaccines</b> like those developed for COVID-19.\n\nThe Human Genome Project (completed in 2003) mapped all 3 billion letters of human DNA — one of the greatest scientific achievements in history.`,
+    q:'What shape is the structure of a DNA molecule?',
+    choices:['A straight ladder','A triple helix','A double helix','A spiral sphere'], a:'A double helix',
+    bonus:'If you unravelled all the DNA in one human cell and stretched it out, it would be about 2 metres long!'
+  },
+  // AMERICAN
+  {
+    era:'american', emoji:'🦅', title:'The American Revolution',
+    lesson:`In the 1770s, Britain's thirteen American colonies had had enough. They were being taxed by a British parliament where they had no representatives — <b>"No taxation without representation!"</b> was their rallying cry.\n\nOn July 4, <b>1776</b>, colonial leaders signed the <b>Declaration of Independence</b>, written largely by Thomas Jefferson. It declared that all men are created equal and have rights to life, liberty, and the pursuit of happiness.\n\nThe <b>Revolutionary War</b> was tough. General <b>George Washington</b> led a ragged army against the professional British forces. A turning point came when France joined on America's side. Britain surrendered in 1781.\n\nAmerica became the first modern nation founded on democratic ideals — and its Constitution, written in 1787, became a model for countries around the world.`,
+    q:'In what year was the American Declaration of Independence signed?',
+    choices:['1765','1781','1776','1783'], a:'1776',
+    bonus:'The Declaration of Independence was largely written by Thomas Jefferson, who was just 33 years old at the time!'
+  },
+  {
+    era:'american', emoji:'⛓️', title:'Slavery & the Civil War',
+    lesson:`When the United States was founded, slavery was legal in the Southern states. Enslaved African Americans were forced to work on plantations growing cotton and tobacco — the foundation of the Southern economy.\n\nBy 1860, tensions over slavery split the country. When <b>Abraham Lincoln</b> was elected president, Southern states feared he would abolish slavery and <b>seceded</b> (broke away), forming the Confederate States of America.\n\nThe <b>Civil War</b> (1861–1865) was the bloodiest war in American history — over 600,000 soldiers died. Lincoln issued the <b>Emancipation Proclamation</b> in 1863, declaring enslaved people in Confederate states free.\n\nThe Union won. The <b>13th Amendment</b> abolished slavery entirely in 1865. But the fight for true equality for Black Americans would continue for over a century.`,
+    q:'Which Amendment to the US Constitution abolished slavery?',
+    choices:['1st Amendment','13th Amendment','14th Amendment','5th Amendment'], a:'13th Amendment',
+    bonus:'Lincoln was assassinated by John Wilkes Booth just days after the war ended, in April 1865.'
+  },
+  {
+    era:'american', emoji:'✊', title:'The Civil Rights Movement',
+    lesson:`Even after slavery ended, Black Americans faced legal discrimination through <b>Jim Crow laws</b> — especially in the South. These laws enforced racial segregation in schools, restaurants, buses, and more.\n\nIn the 1950s and 60s, a powerful movement rose up. <b>Rosa Parks</b> refused to give up her bus seat in 1955, sparking the Montgomery Bus Boycott. <b>Dr. Martin Luther King Jr.</b> led peaceful marches and gave his famous <b>"I Have a Dream"</b> speech in Washington DC in 1963.\n\nProtestors faced fire hoses, police dogs, and violent opposition — but persisted. Their courage led to the <b>Civil Rights Act of 1964</b>, which banned discrimination based on race, and the <b>Voting Rights Act of 1965</b>, which protected Black Americans' right to vote.\n\nThe movement showed that peaceful protest, courage, and moral clarity can change unjust laws.`,
+    q:'What famous speech did Martin Luther King Jr. deliver at the March on Washington in 1963?',
+    choices:['"We Shall Overcome"','"I Have a Dream"','"A Time for Justice"','"Freedom Now"'], a:'"I Have a Dream"',
+    bonus:'Over 250,000 people attended the March on Washington — it was one of the largest political rallies in US history.'
+  },
+  {
+    era:'american', emoji:'🏗️', title:'The Great Depression & the New Deal',
+    lesson:`On October 29, 1929 — known as <b>Black Tuesday</b> — the US stock market crashed. Banks collapsed, businesses closed, and within years, <b>one in four Americans was unemployed</b>. This was the Great Depression.\n\nFamilies lost their homes and savings. Millions lived in makeshift camps called <b>"Hoovervilles"</b> (named mockingly after President Hoover, who they blamed). Soup kitchens became essential.\n\nIn 1933, President <b>Franklin D. Roosevelt</b> launched the <b>New Deal</b> — a series of programmes to rebuild the economy. The government created millions of jobs building roads, dams, parks, and buildings. Social Security was established to support the elderly and unemployed.\n\nThe Depression reshaped Americans' relationship with government — showing that in a crisis, collective action and government intervention could help people survive.`,
+    q:'What was President Roosevelt\'s programme of economic recovery during the Great Depression called?',
+    choices:['The Fair Deal','The Square Deal','The New Deal','The Great Society'], a:'The New Deal',
+    bonus:'"Hoovervilles" — the shantytowns where homeless people lived — were named to blame President Herbert Hoover for the crisis.'
+  },
+  {
+    era:'american', emoji:'🌕', title:'The Moon Landing — 1969',
+    lesson:`On May 25, 1961, President <b>John F. Kennedy</b> made a bold promise: America would send a human to the Moon before the end of the decade. It seemed nearly impossible — NASA had only sent one American to space for 15 minutes.\n\nOver eight years, 400,000 engineers, scientists, and workers built the rockets, computers, and spacesuits needed. The <b>Apollo programme</b> ran missions to test every system.\n\nOn July 16, 1969, <b>Apollo 11</b> launched. Four days later, the lunar module <i>Eagle</i> landed on the Moon's Sea of Tranquility. <b>Neil Armstrong</b> stepped out, followed by <b>Buzz Aldrin</b>. They planted an American flag, collected rocks, and spoke with President Nixon.\n\nThe mission was watched by 600 million people — at the time, the largest television audience in history. It remains one of humanity's greatest achievements.`,
+    q:'What was the name of the Apollo 11 lunar landing module that touched down on the Moon?',
+    choices:['Columbia','Challenger','Eagle','Freedom'], a:'Eagle',
+    bonus:'The onboard computer on Apollo 11 had less processing power than a modern pocket calculator!'
+  },
+
+  // ===== MORE ANCIENT =====
+  {
+    era:'ancient', emoji:'🗿', title:'The Maya Civilisation',
+    lesson:`Deep in the jungles of Central America, the <b>Maya civilisation</b> flourished from around 2000 BC to 1500 AD. At its peak, Maya cities like Tikal and Chichen Itza were home to tens of thousands of people.\n\nThe Maya were extraordinary mathematicians and astronomers. They independently invented the concept of <b>zero</b>, developed one of the most accurate <b>calendars</b> in the ancient world, and tracked the movements of planets with stunning precision — all without telescopes.\n\nThey built massive stepped <b>pyramids</b>, created a sophisticated writing system using glyphs, and played a ritual <b>ball game</b> in large stone courts. Their descendants, millions of Maya people, still live in Mexico and Central America today, keeping the culture alive.`,
+    q:'What mathematical concept did the Maya independently invent?',
+    choices:['Fractions','Pi','Zero','Algebra'], a:'Zero',
+    bonus:'The Maya Long Count calendar calculated a cycle ending on December 21, 2012 — which some people mistakenly thought predicted the end of the world!'
+  },
+  {
+    era:'ancient', emoji:'🌊', title:'Ancient Greece — The Persian Wars',
+    lesson:`In 490 BC, the mighty <b>Persian Empire</b> — the largest empire the world had ever seen — invaded Greece. King Darius sent a massive army expecting easy victory over the small Greek city-states.\n\nAt the <b>Battle of Marathon</b>, a much smaller Athenian army defeated the Persians. According to legend, a runner named Pheidippides ran 25 miles to Athens to deliver the news of victory. This is why modern marathons are about 26 miles.\n\nTen years later, Persia returned under King Xerxes with an even larger force. A tiny band of <b>300 Spartan warriors</b> held a mountain pass called Thermopylae for three days, buying time for Greece. The Greeks ultimately defeated Persia at the naval Battle of Salamis, preserving Greek — and eventually Western — civilisation.`,
+    q:'How far did the legendary runner Pheidippides run to deliver news of the Greek victory at Marathon?',
+    choices:['10 miles','25 miles','50 miles','1 mile'], a:'25 miles',
+    bonus:'The word "marathon" comes directly from the city of Marathon, where the famous battle took place in 490 BC.'
+  },
+  {
+    era:'ancient', emoji:'🐘', title:'Alexander the Great',
+    lesson:`<b>Alexander the Great</b> became king of Macedonia at just 20 years old in 336 BC. In just 13 years, he built the largest empire the ancient world had ever seen — never losing a single battle.\n\nAlexander conquered Persia, Egypt, Central Asia, and reached as far as modern-day India. Everywhere he went, he spread <b>Greek language and culture</b>. He founded over 20 cities named after himself — the most famous being <b>Alexandria in Egypt</b>, which became home to the greatest library in the ancient world.\n\nAlexander died in Babylon in 323 BC at just <b>32 years old</b> — likely from illness. His empire immediately fractured among his generals, but the Greek culture he spread — called Hellenism — influenced the Mediterranean world for centuries.`,
+    q:'How old was Alexander the Great when he died?',
+    choices:['25','32','45','50'], a:'32',
+    bonus:'Alexander\'s horse Bucephalus was so wild nobody could ride it — until 12-year-old Alexander noticed it was afraid of its own shadow and simply turned it to face the sun.'
+  },
+  {
+    era:'ancient', emoji:'⚓', title:'The Phoenicians — Inventors of the Alphabet',
+    lesson:`The <b>Phoenicians</b> were a sea-trading civilisation based along the coast of modern-day Lebanon, flourishing from around 1500 to 300 BC. They were the greatest sailors and traders of the ancient world, establishing colonies across the Mediterranean.\n\nTheir most lasting contribution was the invention of the <b>alphabet</b> — a writing system using symbols that represent sounds rather than whole words or pictures. Before this, writing systems like Egyptian hieroglyphics needed hundreds of signs. The Phoenician alphabet had just 22 letters.\n\nThe Greeks adapted the Phoenician alphabet, adding vowels. The Romans adapted the Greek version. That Roman alphabet is what you are reading <b>right now</b>. Almost every alphabet used in the world today traces back to the Phoenicians.`,
+    q:'How many letters did the original Phoenician alphabet have?',
+    choices:['26','52','22','10'], a:'22',
+    bonus:'The word "alphabet" comes from the first two letters of the Greek alphabet — Alpha and Beta — which were themselves adapted from Phoenician letters.'
+  },
+  {
+    era:'ancient', emoji:'🌾', title:'The First Farmers — The Neolithic Revolution',
+    lesson:`For most of human history — roughly 200,000 years — people were <b>hunter-gatherers</b>, moving constantly to find food. Then, around 10,000 BC, something remarkable happened.\n\nIn a region called the <b>Fertile Crescent</b> (covering modern-day Iraq, Syria, Turkey, and Israel), people began deliberately planting seeds and raising animals. This was the <b>Neolithic Revolution</b> — the invention of farming.\n\nFarming changed everything. People could stay in one place, grow surplus food, and support larger populations. Settlements grew into villages, then cities. Specialised jobs emerged — potters, priests, soldiers, merchants. Writing was invented to keep track of goods. Every city, every civilisation, every technology you use today traces back to those first farmers.`,
+    q:'In what region did the world\'s first farming communities emerge around 10,000 BC?',
+    choices:['The Nile Delta','The Indus Valley','The Fertile Crescent','The Yellow River Valley'], a:'The Fertile Crescent',
+    bonus:'Dogs were the first animals domesticated by humans — possibly as early as 15,000 years ago, before farming even began!'
+  },
+  {
+    era:'ancient', emoji:'🛕', title:'Ancient India — The Indus Valley Civilisation',
+    lesson:`Along the Indus River in modern-day Pakistan, one of the ancient world's most sophisticated civilisations flourished from around 2600 to 1900 BC. Cities like <b>Mohenjo-daro</b> had straight, grid-pattern streets, multi-storey brick buildings, and — remarkably — <b>indoor plumbing and sewage systems</b> that most of Europe wouldn't match for thousands of years.\n\nThe civilisation traded with Mesopotamia and had its own writing system that has never been fully deciphered. Its decline around 1900 BC may have been caused by climate change or drought.\n\nLater, Indian civilisation gave the world <b>zero, decimal numbers, chess,</b> and two of the world's great religions — <b>Hinduism and Buddhism</b>. The concept of zero, passed through the Islamic world to Europe, made modern mathematics and computing possible.`,
+    q:'What remarkable feature of the Indus Valley cities was far ahead of most ancient civilisations?',
+    choices:['Glass windows','Indoor plumbing and sewage','Electricity','Iron weapons'], a:'Indoor plumbing and sewage',
+    bonus:'The game of chess was invented in India around 600 AD and spread west through Persia to become the game we play today.'
+  },
+  {
+    era:'ancient', emoji:'🔱', title:'The Persian Empire — The First Superpower',
+    lesson:`The <b>Persian Empire</b>, at its height under King <b>Darius I</b> around 500 BC, was the largest empire the world had ever seen — stretching from Greece and Egypt to India. Unlike many conquerors, the Persians were often tolerant rulers who allowed conquered peoples to keep their <b>languages, religions, and local customs</b>.\n\nThe famous <b>Royal Road</b> — nearly 2,700 km long — connected the empire with a messenger relay system that could carry news from one end to the other in a week.\n\nPersian King <b>Cyrus the Great</b> is particularly celebrated — he freed the Jewish people from Babylonian captivity and issued one of the world's first declarations of human rights, inscribed on the <b>Cyrus Cylinder</b>, which now sits in the British Museum.`,
+    q:'What is Cyrus the Great particularly celebrated for creating — one of the world\'s first?',
+    choices:['A world map','A military academy','A declaration of human rights','A central bank'], a:'A declaration of human rights',
+    bonus:'The Persian Royal Road\'s messenger relay system inspired the famous phrase: \'Neither snow nor rain nor heat nor gloom of night\' — which Americans associate with the US Postal Service.'
+  },
+  {
+    era:'ancient', emoji:'🧱', title:'The Seven Wonders of the Ancient World',
+    lesson:`Ancient travellers compiled a list of the most spectacular human-made structures in the known world — the <b>Seven Wonders of the Ancient World</b>. Of the seven, only one still stands today.\n\nThe list included: the <b>Great Pyramid of Giza</b> (the only survivor), the Hanging Gardens of Babylon, the Statue of Zeus at Olympia, the Temple of Artemis at Ephesus, the Mausoleum at Halicarnassus, the Colossus of Rhodes, and the Lighthouse of Alexandria.\n\nThe <b>Lighthouse of Alexandria</b> on the Egyptian coast was over 300 feet high and used mirrors to reflect firelight visible to sailors miles out at sea. Most wonders were destroyed by earthquakes, fires, or invaders over the centuries.`,
+    q:'Which of the Seven Wonders of the Ancient World is the only one still standing today?',
+    choices:['The Hanging Gardens of Babylon','The Lighthouse of Alexandria','The Great Pyramid of Giza','The Colossus of Rhodes'], a:'The Great Pyramid of Giza',
+    bonus:'The Great Pyramid of Giza was the tallest structure in the world for 3,800 years — until Lincoln Cathedral in England surpassed it in 1311 AD.'
+  },
+  {
+    era:'ancient', emoji:'⚔️', title:'Julius Caesar & the Fall of the Roman Republic',
+    lesson:`<b>Julius Caesar</b> was Rome's greatest general — he conquered all of Gaul (modern France) over eight years and wrote about it himself in his famous war commentaries. His military success made him incredibly popular with ordinary Romans and his soldiers, but threatened the Senate.\n\nIn 49 BC, the Senate ordered Caesar to give up his army. Instead he crossed the <b>Rubicon river</b> — the legal boundary of his command — with his troops, triggering a civil war. He quickly defeated his rivals and became dictator of Rome.\n\nFearing he would make himself king, a group of senators — including his friend <b>Brutus</b> — stabbed him to death in the Senate on the <b>Ides of March</b> (March 15) 44 BC. His assassination plunged Rome into more civil wars, eventually leading to the end of the Republic and the rise of his adopted son Augustus as Rome's first emperor.`,
+    q:'What did it mean when Julius Caesar "crossed the Rubicon"?',
+    choices:['He swam the River Nile','He illegally marched his army into Rome\'s territory, starting a civil war','He crossed from Europe into Africa','He signed a peace treaty'], a:'He illegally marched his army into Rome\'s territory, starting a civil war',
+    bonus:'"Crossing the Rubicon" is still an English idiom meaning passing a point of no return — making a decision you cannot take back.'
+  },
+  {
+    era:'ancient', emoji:'🌙', title:'Ancient Astronomy — Reading the Stars',
+    lesson:`Long before telescopes, ancient peoples around the world studied the sky with remarkable precision. In <b>Babylonia</b>, astronomers tracked planetary movements and could predict eclipses. In <b>Egypt</b>, the pyramids were aligned with extraordinary precision to star positions and cardinal directions.\n\nThe <b>Greeks</b> made huge leaps: Eratosthenes calculated the circumference of the Earth to within 2% accuracy around 240 BC — using just shadows, a stick, and geometry. Aristarchus proposed that the Earth orbits the Sun, 1,800 years before Copernicus.\n\nIn <b>Mesoamerica</b>, the Maya tracked the movements of Venus with astonishing accuracy. In <b>Britain</b>, Stonehenge was built around 3000 BC as an astronomical calendar — its stones align perfectly with the summer solstice sunrise. Ancient astronomy shows that curiosity about the cosmos is one of humanity's oldest and most universal traits.`,
+    q:'Which ancient Greek calculated the circumference of the Earth to within 2% accuracy around 240 BC?',
+    choices:['Pythagoras','Aristotle','Eratosthenes','Archimedes'], a:'Eratosthenes',
+    bonus:'Eratosthenes calculated the Earth\'s circumference by measuring the angle of shadows at noon in two different Egyptian cities on the same day — using just a stick and geometry.'
+  },
+
+  // ===== MORE MEDIEVAL =====
+  {
+    era:'medieval', emoji:'🕌', title:'The Islamic Golden Age',
+    lesson:`While Europe was in its Early Middle Ages, the Islamic world was experiencing a <b>Golden Age</b> of science and culture — roughly 800 to 1300 AD. The centre was Baghdad's <b>House of Wisdom</b>, where scholars translated and built on knowledge from ancient Greece, Persia, and India.\n\nMuslim scholars advanced <b>algebra</b> (the word comes from Arabic), astronomy, medicine, chemistry, and optics. The Persian physician <b>Ibn Sina (Avicenna)</b> wrote a medical encyclopaedia used in European universities for 600 years. <b>Al-Khwarizmi</b> invented algebra — and the word "algorithm" comes from his name.\n\nIslamic scholars preserved ancient Greek texts that Europe had lost. When these were translated into Latin, they helped spark the Renaissance. The numerals we use today — 1, 2, 3... — are called <b>Arabic numerals</b> because Europe adopted them from Islamic mathematicians.`,
+    q:'What branch of mathematics was invented by the Islamic scholar Al-Khwarizmi?',
+    choices:['Geometry','Calculus','Algebra','Trigonometry'], a:'Algebra',
+    bonus:'The word "algebra" comes from the Arabic "al-jabr," meaning "the reunion of broken parts" — from Al-Khwarizmi\'s 9th-century textbook.'
+  },
+  {
+    era:'medieval', emoji:'🗼', title:'The Mongol Empire',
+    lesson:`In the early 1200s, a chieftain named <b>Temüjin</b> united the nomadic tribes of the Mongolian steppe and took the title <b>Genghis Khan</b> — "universal ruler." What followed was one of the most dramatic conquests in history.\n\nThe Mongol Empire became the <b>largest contiguous land empire</b> in history, stretching from the Pacific Ocean to Eastern Europe. Mongol armies were ferociously effective — expert horse archers who could strike fast, retreat, and overwhelm much larger forces.\n\nThe Mongols also created a period of relative peace across their vast empire called the <b>Pax Mongolica</b>, allowing trade and ideas to flow freely along the Silk Road. The plague that became the Black Death likely spread west along these trade routes.`,
+    q:'What title did Temüjin take when he became ruler of the Mongol Empire?',
+    choices:['Emperor Khan','Genghis Khan','Great Khan','Kublai Khan'], a:'Genghis Khan',
+    bonus:'At its peak, the Mongol Empire covered 24 million square kilometres — about 16% of the Earth\'s entire land area.'
+  },
+  {
+    era:'medieval', emoji:'⚜️', title:'Joan of Arc',
+    lesson:`In 1428, France was losing the Hundred Years' War. Then a 17-year-old peasant girl from a small village changed everything.\n\n<b>Joan of Arc</b> claimed she heard the voices of saints telling her to drive the English out of France. Somehow, she convinced the French prince Charles to give her armour and an army. She led French troops to lift the siege of Orléans in just nine days — a stunning victory that turned the tide of the war.\n\nJoan was eventually captured, sold to the English, and tried for heresy. She was <b>burned at the stake</b> in 1431, aged just 19. France ultimately won the war in 1453. Joan was declared innocent 25 years after her death, and was canonised as a <b>saint</b> in 1920. She remains one of history's most extraordinary figures.`,
+    q:'How old was Joan of Arc when she was executed?',
+    choices:['15','19','25','30'], a:'19',
+    bonus:'Joan of Arc was illiterate — she could neither read nor write. Yet she dictated detailed military letters that historians still study today.'
+  },
+  {
+    era:'medieval', emoji:'🌏', title:'The Silk Road',
+    lesson:`For over a thousand years, a vast network of trade routes — collectively called the <b>Silk Road</b> — connected China to the Mediterranean world, stretching over 7,000 miles through deserts, mountains, and steppes.\n\nThe routes were named for precious <b>Chinese silk</b> that was so valued in the West that Roman emperors tried to ban it. But silk was just the beginning — spices, porcelain, glass, gold, ideas, and religions all travelled these routes. <b>Buddhism</b> spread from India to China along it. Paper-making spread from China to the Islamic world and then to Europe.\n\nNo single person or empire controlled all of it — it was a web of merchants, each moving goods a short distance and passing them to the next. The <b>Black Death</b> also travelled west along it in the 1340s.`,
+    q:'The Silk Road trade routes primarily connected which two regions?',
+    choices:['Egypt and India','China and the Mediterranean','Africa and Europe','Persia and Greece'], a:'China and the Mediterranean',
+    bonus:'Merchants rarely travelled the full length of the Silk Road — goods changed hands many times, with each middleman adding to the price.'
+  },
+  {
+    era:'medieval', emoji:'🌊', title:'The Vikings',
+    lesson:`From around 793 to 1066 AD, the <b>Vikings</b> — seafaring peoples from Scandinavia — raided, traded, and settled across an enormous swath of the world.\n\nTheir <b>longships</b> were engineering marvels — shallow enough to sail up rivers, strong enough to cross the Atlantic. Vikings raided monasteries across Britain and Europe, but they were also skilled <b>traders and settlers</b>. They founded cities including Dublin and Kiev.\n\nAround 1000 AD, <b>Leif Erikson</b> reached <b>North America</b> — nearly 500 years before Columbus. The days of the week Tuesday, Wednesday, Thursday, and Friday are named after Norse gods: Tyr, Woden (Odin), Thor, and Frigg.`,
+    q:'Which Viking explorer reached North America around 1000 AD?',
+    choices:['Erik the Red','Bjorn Ironside','Leif Erikson','Ragnar Lothbrok'], a:'Leif Erikson',
+    bonus:'The word "berserk" comes from Norse — berserkers were Viking warriors who fought in a wild, trance-like fury in battle.'
+  },
+  {
+    era:'medieval', emoji:'📋', title:'Magna Carta — The Birth of Rights',
+    lesson:`In 1215, English King <b>John</b> was deeply unpopular — he taxed heavily and ignored nobles' rights. His barons finally rebelled, and at <b>Runnymede</b> meadow they forced him to sign a document called <b>Magna Carta</b> — Latin for "Great Charter."\n\nMagna Carta established crucial principles: that <b>no one, not even the king, is above the law</b>; that free men could not be imprisoned without a fair trial; and that taxes required consent.\n\nKing John immediately asked the Pope to annul it. But Magna Carta became a powerful symbol that influenced the US Constitution, the Universal Declaration of Human Rights, and legal systems around the world. It is one of the founding documents of democracy.`,
+    q:'What does "Magna Carta" mean in English?',
+    choices:['Great King','Royal Charter','Great Charter','Freedom Document'], a:'Great Charter',
+    bonus:'Only four original copies of the 1215 Magna Carta survive — two are in the British Library, one in Lincoln Cathedral, and one in Salisbury Cathedral.'
+  },
+  {
+    era:'medieval', emoji:'🖨️', title:"Gutenberg's Printing Press",
+    lesson:`Before the 1440s, every book in Europe was copied by hand — usually by monks working for months on a single volume. Books were so expensive only the very wealthy could own them.\n\nAround 1440, German goldsmith <b>Johannes Gutenberg</b> developed the <b>movable type printing press</b> — a machine using individually cast metal letters that could be rearranged and reused to print quickly and cheaply.\n\nBy 1500 — just 50 years later — over 20 million books had been printed across Europe. Ideas spread faster than ever. The <b>Protestant Reformation</b> was accelerated because Martin Luther's criticisms of the Church could be printed and distributed across Europe within weeks. The printing press is one of the most transformative inventions in human history.`,
+    q:'Where was Johannes Gutenberg, inventor of the printing press, from?',
+    choices:['France','England','Italy','Germany'], a:'Germany',
+    bonus:'Gutenberg\'s first major print run was the Bible — about 180 copies. Today fewer than 50 original Gutenberg Bibles survive, each worth tens of millions of dollars.'
+  },
+  {
+    era:'medieval', emoji:'🕍', title:'The Ottoman Empire',
+    lesson:`In 1453, the <b>Ottoman Turks</b> under Sultan <b>Mehmed II</b> conquered <b>Constantinople</b> — capital of the Byzantine Empire and one of the most heavily fortified cities in the world. They used massive new bronze cannons to breach walls that had stood for a thousand years.\n\nThe Ottoman Empire at its peak under <b>Suleiman the Magnificent</b> stretched from Hungary to the Persian Gulf, from Algeria to Iraq. It was a sophisticated, multicultural state that allowed non-Muslim subjects to generally practice their faith.\n\nThe Ottomans controlled key trade routes between Europe and Asia — one major reason Europeans were so motivated to find sea routes around Africa to the Americas. The empire lasted until 1922 — one of the longest-lived empires in history.`,
+    q:'What powerful new weapon did the Ottomans use to breach Constantinople\'s walls in 1453?',
+    choices:['Greek fire','Trebuchets','Bronze cannons','War elephants'], a:'Bronze cannons',
+    bonus:'After conquering Constantinople, Mehmed II renamed it Istanbul and made it the new Ottoman capital, which it remained for nearly 500 years.'
+  },
+  {
+    era:'medieval', emoji:'🧙', title:'The Scientific Revolution',
+    lesson:`From roughly 1543 to 1700, European thinkers overturned centuries of accepted wisdom about the universe — in what we call the <b>Scientific Revolution</b>.\n\n<b>Copernicus</b> proposed the Earth orbits the Sun. <b>Galileo</b> confirmed this with a telescope and was put under house arrest by the Church. <b>Isaac Newton</b> (1643–1727) described the laws of gravity and motion — explaining everything from falling apples to planetary orbits with the same mathematics.\n\nNewton's work showed that the universe follows discoverable, mathematical laws — a completely new way of understanding reality that laid the foundation for all modern science and technology.`,
+    q:'Which scientist proposed that the Earth orbits the Sun, not the other way around?',
+    choices:['Galileo Galilei','Isaac Newton','Nicolaus Copernicus','Johannes Kepler'], a:'Nicolaus Copernicus',
+    bonus:'Isaac Newton said: "If I have seen further, it is by standing on the shoulders of giants" — crediting all the scientists who came before him.'
+  },
+  {
+    era:'medieval', emoji:'🌺', title:'The Aztec Empire',
+    lesson:`In the 1400s, the <b>Aztec Empire</b> dominated central Mexico with a capital city, <b>Tenochtitlán</b>, built on an island in a lake — connected to the mainland by causeways. At its peak it had 200,000–300,000 inhabitants, making it one of the largest cities in the world.\n\nThe Aztecs built towering <b>pyramids</b>, developed sophisticated <b>agricultural systems</b> including floating garden islands called chinampas, and maintained detailed calendars.\n\nIn 1519, Spanish conquistador <b>Hernán Cortés</b> arrived with about 600 soldiers. Through local alliances, deception, and the devastating impact of <b>smallpox</b> — to which indigenous Americans had no immunity — the Spanish destroyed the Aztec Empire by 1521. The population of central Mexico fell from an estimated 25 million to just 1 million within a century.`,
+    q:'What was the name of the Aztec capital city, built on an island in a lake?',
+    choices:['Cusco','Teotihuacan','Tenochtitlán','Chichen Itza'], a:'Tenochtitlán',
+    bonus:'Tenochtitlán was built where Mexico City stands today — you can still visit the ruins of Aztec temples beneath the modern city.'
+  },
+
+  // ===== MORE MODERN =====
+  {
+    era:'modern', emoji:'🏭', title:'The French Revolution',
+    lesson:`In 1789, France was bankrupt, harvests had failed, and millions were starving while King Louis XVI and the aristocracy lived in luxury at Versailles.\n\nIn July 1789, a Paris mob stormed the <b>Bastille</b> prison — a symbol of royal tyranny. The <b>French Revolution</b> had begun. The Declaration of the Rights of Man proclaimed <b>liberty, equality, and popular sovereignty</b> — ideas that spread across Europe.\n\nThe Revolution turned violent in the <b>Reign of Terror</b> (1793–94), when thousands — including King Louis XVI and Queen Marie Antoinette — were executed by guillotine. Out of the chaos rose <b>Napoleon Bonaparte</b>, who crowned himself Emperor and conquered most of Europe before his final defeat at Waterloo in 1815.`,
+    q:'What Paris building did revolutionaries storm on July 14, 1789, marking the start of the French Revolution?',
+    choices:['The Palace of Versailles','The Louvre','Notre Dame Cathedral','The Bastille'], a:'The Bastille',
+    bonus:'July 14 — Bastille Day — is still France\'s national holiday, celebrated with fireworks and parades every year.'
+  },
+  {
+    era:'modern', emoji:'🦠', title:'Germ Theory — How We Learned About Disease',
+    lesson:`For most of history, people believed disease was caused by <b>bad air</b>, divine punishment, or imbalances in the body. Surgeons operated without washing their hands. Hospitals were often deadly places.\n\nIn the 1860s, French scientist <b>Louis Pasteur</b> proved that tiny microorganisms — <b>germs</b> — cause fermentation, food spoilage, and disease. British surgeon <b>Joseph Lister</b> applied this to surgery, introducing antiseptics. Death rates from surgery plummeted. <b>Robert Koch</b> identified the specific bacteria causing tuberculosis and cholera.\n\nPasteur also developed vaccines for chicken cholera and rabies. His insight that germs cause disease — and that we can fight them — is the foundation of all modern medicine.`,
+    q:'Who proved that tiny microorganisms (germs) cause disease in the 1860s?',
+    choices:['Joseph Lister','Alexander Fleming','Louis Pasteur','Robert Koch'], a:'Louis Pasteur',
+    bonus:'The process of heating liquids to kill bacteria is named after Pasteur — it\'s called "pasteurisation," and it\'s how milk is made safe to drink.'
+  },
+  {
+    era:'modern', emoji:'✈️', title:'The Wright Brothers — First Flight',
+    lesson:`On December 17, 1903, on a windswept beach at <b>Kitty Hawk, North Carolina</b>, brothers <b>Orville and Wilbur Wright</b> made history. Their aircraft stayed airborne for 12 seconds and covered 120 feet — the first successful powered, controlled flight in history.\n\nThe Wright brothers were bicycle mechanics from Dayton, Ohio — self-taught engineers with no university degrees. They succeeded where wealthy competitors had failed because they focused obsessively on <b>control</b> — understanding how to steer and balance a flying machine.\n\nWithin 10 years, aeroplanes were used in World War I. Within 66 years of Kitty Hawk, humans had walked on the Moon. Today over <b>100,000 flights</b> take off every day worldwide.`,
+    q:'Where did the Wright Brothers make the world\'s first successful powered flight?',
+    choices:['Dayton, Ohio','Washington D.C.','Kitty Hawk, North Carolina','Chicago, Illinois'], a:'Kitty Hawk, North Carolina',
+    bonus:'The first flight covered 120 feet — shorter than the wingspan of a modern Boeing 747!'
+  },
+  {
+    era:'modern', emoji:'💉', title:'The Discovery of Penicillin',
+    lesson:`In September 1928, Scottish bacteriologist <b>Alexander Fleming</b> returned from holiday to find a mould had contaminated one of his petri dishes — and the bacteria around it were dead. The mould was <i>Penicillium notatum</i>, and he realised it was producing something that killed bacteria. He named it <b>penicillin</b>.\n\nFleming struggled to produce enough penicillin to be useful. In the 1940s, scientists <b>Howard Florey and Ernst Chain</b> solved that problem, mass-producing it just in time for World War II, where it saved hundreds of thousands of soldiers from infected wounds.\n\nPenicillin was the world's first <b>antibiotic</b>. Alongside vaccines, it is probably responsible for more lives saved than any other discovery in history.`,
+    q:'Who discovered penicillin in 1928?',
+    choices:['Louis Pasteur','Alexander Fleming','Howard Florey','Marie Curie'], a:'Alexander Fleming',
+    bonus:'Fleming almost threw away the contaminated dish. He said: "One sometimes finds what one is not looking for."'
+  },
+  {
+    era:'modern', emoji:'🌐', title:'The Internet',
+    lesson:`The internet began as a US military project. In 1969, <b>ARPANET</b> sent the first message between computers at UCLA and Stanford — it crashed after just two letters: "LO."\n\nFor decades, the internet was used mainly by academics and the military. Then in 1991, British scientist <b>Tim Berners-Lee</b> invented the <b>World Wide Web</b> — making the internet accessible to everyone through websites and links.\n\nThe Web transformed commerce, communication, education, and politics. By 2024, over <b>5 billion people</b> — more than half of humanity — use the internet. It has created trillion-dollar companies and fundamentally changed how humans relate to information and each other.`,
+    q:'Who invented the World Wide Web in 1991?',
+    choices:['Bill Gates','Steve Jobs','Tim Berners-Lee','Mark Zuckerberg'], a:'Tim Berners-Lee',
+    bonus:'Tim Berners-Lee deliberately did not patent the World Wide Web — he gave it to the world for free, saying he wanted it to remain open and accessible to everyone.'
+  },
+  {
+    era:'modern', emoji:'🧊', title:'Climate Change — The Defining Challenge',
+    lesson:`Since the <b>Industrial Revolution</b>, humans have burned fossil fuels — coal, oil, and gas — releasing enormous amounts of <b>carbon dioxide</b> into the atmosphere. CO₂ traps heat from the sun, warming the planet.\n\nScientists have warned about this <b>greenhouse effect</b> since the 1800s. Since 1900, global average temperatures have risen by about <b>1.2°C</b>. This is causing more extreme weather, rising sea levels, melting glaciers, and threatening hundreds of millions of people.\n\nIn 2015, nearly every country signed the <b>Paris Agreement</b> to limit warming to 1.5–2°C. The challenge requires rapid transformation of how we produce energy, food, and goods — the largest collective action problem humanity has ever faced.`,
+    q:'What gas, released by burning fossil fuels, is the main driver of modern climate change?',
+    choices:['Oxygen','Nitrogen','Carbon dioxide','Methane'], a:'Carbon dioxide',
+    bonus:'The concentration of CO₂ in the atmosphere is now higher than at any point in the last 3 million years — before modern humans even existed.'
+  },
+  {
+    era:'modern', emoji:'🏥', title:'The Discovery of Vaccines',
+    lesson:`In the 1790s, smallpox killed or disfigured millions every year. English doctor <b>Edward Jenner</b> noticed that milkmaids who caught cowpox seemed immune to smallpox. In 1796, he deliberately infected a boy with cowpox, then exposed him to smallpox — the boy didn't get sick. <b>Vaccination</b> was born. The word comes from <i>vacca</i> — Latin for cow.\n\n<b>Louis Pasteur</b> extended the principle to other diseases. By 1980, smallpox — which had killed hundreds of millions throughout history — was completely <b>eradicated</b>: the first disease ever wiped out by human effort.\n\nToday vaccines prevent 2–3 million deaths every year from measles, polio, tetanus, flu, and more.`,
+    q:'Which disease was Edward Jenner creating a vaccine against when he discovered the principle of vaccination?',
+    choices:['Cholera','Typhoid','Smallpox','Measles'], a:'Smallpox',
+    bonus:'Smallpox was so feared that George Washington ordered his entire Continental Army to be inoculated against it during the American Revolution — a decision that may have helped win the war.'
+  },
+  {
+    era:'modern', emoji:'🎸', title:'The Cold War',
+    lesson:`After World War II, the world split into two rival camps: the <b>capitalist West</b> led by the United States, and the <b>communist East</b> led by the Soviet Union. This standoff — called the <b>Cold War</b> — lasted from 1947 to 1991.\n\nIt was called "cold" because both sides had <b>nuclear weapons</b>, and both knew a direct war could destroy civilisation. Instead they competed through proxy wars, espionage, propaganda, and the Space Race.\n\nThe <b>Cuban Missile Crisis</b> of 1962 was the closest the world came to nuclear war — Soviet missiles discovered in Cuba, 90 miles from Florida. For 13 days the world held its breath. The Cold War ended when the Soviet Union collapsed in 1991 and the <b>Berlin Wall</b> fell in November 1989.`,
+    q:'What event in 1962 brought the world closest to nuclear war?',
+    choices:['The Korean War','The Berlin Crisis','The Cuban Missile Crisis','The Vietnam War'], a:'The Cuban Missile Crisis',
+    bonus:'During the Cuban Missile Crisis, a Soviet submarine almost launched a nuclear torpedo — it was stopped by one officer, Vasili Arkhipov, who refused to give the order. He may have saved the world.'
+  },
+  {
+    era:'modern', emoji:'🇿🇦', title:'Nelson Mandela & the End of Apartheid',
+    lesson:`For decades, South Africa was governed by <b>apartheid</b> — a system of legal racial discrimination where Black South Africans were denied basic rights. <b>Nelson Mandela</b> was a lawyer and activist who fought apartheid.\n\nArrested in 1964, Mandela spent <b>27 years</b> in prison on Robben Island. International pressure and internal resistance eventually forced the government to release him in 1990. Negotiations led to South Africa's first free elections in 1994. Mandela became South Africa's <b>first democratically elected president</b> at age 75.\n\nHis message of <b>reconciliation over revenge</b> — working with former oppressors rather than punishing them — prevented a civil war and became an inspiration to the entire world.`,
+    q:'How many years did Nelson Mandela spend in prison?',
+    choices:['10 years','15 years','27 years','35 years'], a:'27 years',
+    bonus:'Mandela turned down early release offers multiple times — he refused to be freed unless all political prisoners were also addressed and apartheid conditions changed.'
+  },
+
+  // ===== MORE AMERICAN =====
+  {
+    era:'american', emoji:'🗽', title:'Immigration & the American Melting Pot',
+    lesson:`Between 1880 and 1920, over <b>20 million immigrants</b> arrived in the United States — mostly from Southern and Eastern Europe — fleeing poverty, persecution, and famine.\n\nMost arrived by ship, passing through <b>Ellis Island</b> in New York Harbor, greeted by the Statue of Liberty with the words: <i>"Give me your tired, your poor, your huddled masses yearning to breathe free."</i>\n\nImmigrants transformed American cities, culture, food, and music. Italian, Jewish, Polish, Greek, Chinese, Irish, and hundreds of other cultures blended into what became called the American "melting pot." Many faced discrimination and hard conditions, but most eventually built new lives and became American citizens.`,
+    q:'Where were most arriving immigrants to the US processed between 1880 and 1920?',
+    choices:['The Statue of Liberty','Boston Harbour','Ellis Island','Castle Garden'], a:'Ellis Island',
+    bonus:'Immigration officers at Ellis Island sometimes changed immigrants\' names because they couldn\'t spell them — many American families have anglicised versions of their original surnames as a result.'
+  },
+  {
+    era:'american', emoji:'🌵', title:'The Wild West & Manifest Destiny',
+    lesson:`Throughout the 1800s, the United States expanded aggressively westward, driven by <b>Manifest Destiny</b> — the belief that Americans were destined to spread across the whole continent.\n\nThe Louisiana Purchase (1803) doubled the country's size overnight. The California Gold Rush (1848) sent 300,000 people rushing west. The <b>Transcontinental Railroad</b>, completed in 1869, connected East and West coasts.\n\nThis expansion came at a devastating cost to <b>Native American peoples</b>. Millions were killed, displaced, or forced onto reservations. The government repeatedly broke treaties. The Massacre at <b>Wounded Knee</b> in 1890 — where US troops killed around 250 Lakota Sioux, mostly women and children — marked the brutal end of armed Native American resistance.`,
+    q:'What was the belief called that Americans were destined to expand across the entire continent?',
+    choices:['American Exceptionalism','Manifest Destiny','Westward Progress','Continental Doctrine'], a:'Manifest Destiny',
+    bonus:'The Transcontinental Railroad was built largely by Chinese and Irish immigrants — both groups faced severe discrimination despite their crucial contribution.'
+  },
+  {
+    era:'american', emoji:'🎤', title:'The Harlem Renaissance',
+    lesson:`In the 1920s and 30s, the New York neighbourhood of <b>Harlem</b> became the centre of an extraordinary explosion of Black American art, literature, and music — known as the <b>Harlem Renaissance</b>.\n\nThis was partly driven by the <b>Great Migration</b> — hundreds of thousands of Black Americans leaving the Jim Crow South for northern cities. In Harlem they found creative freedom and community.\n\nPoets like <b>Langston Hughes</b>, novelists like <b>Zora Neale Hurston</b>, and musicians like <b>Duke Ellington</b> created work that celebrated Black life and challenged racism. The Harlem Renaissance laid the cultural groundwork for the Civil Rights Movement and showed the world the richness of Black American culture.`,
+    q:'Which poet was one of the central figures of the Harlem Renaissance?',
+    choices:['W.E.B. Du Bois','Langston Hughes','Marcus Garvey','Frederick Douglass'], a:'Langston Hughes',
+    bonus:'Langston Hughes\' 1951 poem "Harlem" — asking "What happens to a dream deferred?" — directly inspired the title of Lorraine Hansberry\'s landmark play "A Raisin in the Sun."'
+  },
+  {
+    era:'american', emoji:'🏕️', title:"America's National Parks",
+    lesson:`In 1872, the United States set aside over 2 million acres in Wyoming — the <b>Yellowstone</b> area — as a public park, protected "for the benefit and enjoyment of the people." It was the world's first national park.\n\nPresident <b>Theodore Roosevelt</b>, a passionate conservationist, dramatically expanded the system in the early 1900s — establishing 5 national parks, 18 national monuments, and 150 national forests, protecting 230 million acres total.\n\nToday the US has <b>63 national parks</b> — from the Grand Canyon to Yosemite to the Everglades — visited by hundreds of millions each year. Writer Wallace Stegner called it "the best idea we ever had" — democratic beauty preserved for everyone, not just the wealthy.`,
+    q:'Which president dramatically expanded the US National Parks system in the early 1900s?',
+    choices:['Abraham Lincoln','Woodrow Wilson','Theodore Roosevelt','Franklin Roosevelt'], a:'Theodore Roosevelt',
+    bonus:'Yellowstone sits on top of a supervolcano. If it ever erupted at full power, it could affect the entire planet\'s climate.'
+  },
+  {
+    era:'american', emoji:'🗳️', title:"Women's Suffrage — The Right to Vote",
+    lesson:`For most of American history, women could not vote. The <b>Seneca Falls Convention</b> of 1848 — organised by Elizabeth Cady Stanton and Lucretia Mott — was the first women's rights convention in American history, declaring "all men and women are created equal."\n\nFor decades, suffragists campaigned, marched, and were arrested. <b>Susan B. Anthony</b> was fined for voting illegally in 1872. After years of pressure — and women's visible contribution to World War I — Congress passed the <b>19th Amendment</b> in 1919. It was ratified on August 18, 1920, giving all American women the right to vote.\n\nThe deciding vote in the state of Tennessee was cast by a young legislator who changed his mind after receiving a letter from his mother urging him to do the right thing.`,
+    q:"Which Amendment to the US Constitution gave women the right to vote?",
+    choices:['13th Amendment','15th Amendment','19th Amendment','21st Amendment'], a:'19th Amendment',
+    bonus:'The 19th Amendment was ratified exactly 72 years after the Seneca Falls Convention first demanded women\'s suffrage in 1848.'
+  },
+  {
+    era:'american', emoji:'💻', title:'Silicon Valley & the Tech Revolution',
+    lesson:`In the 1970s and 80s, a cluster of companies in California's <b>Santa Clara Valley</b> — nicknamed <b>Silicon Valley</b> — began producing the personal computers, software, and eventually internet platforms that would reshape the world.\n\n<b>Steve Jobs and Steve Wozniak</b> founded Apple in a garage in 1976. <b>Bill Gates and Paul Allen</b> founded Microsoft. In the 1990s, the internet boom created hundreds of companies — many crashed in the 2001 "dot-com bubble."\n\nThe survivors — plus <b>Google</b> (1998), <b>Amazon</b> (1994), <b>Facebook</b> (2004), and Apple's <b>iPhone</b> (2007) — changed how people communicate, shop, find information, and see the world. The technology revolution is still accelerating with artificial intelligence.`,
+    q:'Which two people co-founded Apple Computer in a garage in 1976?',
+    choices:['Bill Gates and Paul Allen','Steve Jobs and Steve Wozniak','Larry Page and Sergey Brin','Jeff Bezos and Mark Zuckerberg'], a:'Steve Jobs and Steve Wozniak',
+    bonus:'The first Apple computer sold for $666.66. It had no keyboard, no monitor, and had to be assembled by the buyer.'
+  },
+  {
+    era:'american', emoji:'🌊', title:'Hurricane Katrina & Emergency Response',
+    lesson:`On August 29, 2005, <b>Hurricane Katrina</b> made landfall near New Orleans — one of the most destructive hurricanes in US history. The storm surge overwhelmed the city's <b>levee system</b>, flooding 80% of New Orleans. Over <b>1,800 people</b> died, and more than a million were displaced.
+
+The federal government's response was widely criticised as slow and inadequate. Many residents — disproportionately poor and Black — were stranded for days without food, water, or rescue. The images of people on rooftops waiting for help shocked the nation.
+
+Katrina exposed deep fault lines in American society around <b>race, poverty, and government preparedness</b>. It accelerated the transformation of New Orleans and sparked lasting debates about infrastructure, climate resilience, and who gets protected in a crisis.`,
+    q:'What infrastructure failure caused 80% of New Orleans to flood during Hurricane Katrina?',
+    choices:['Dam collapse','Levee system failure','River overflow','Sewer system collapse'], a:'Levee system failure',
+    bonus:'New Orleans is mostly below sea level — some neighbourhoods sit 6 to 10 feet below the surface of the nearby Lake Pontchartrain.'
+  },
+  {
+    era:'american', emoji:'🏦', title:'The 2008 Financial Crisis',
+    lesson:`In 2008, the United States experienced its worst financial crisis since the Great Depression. The cause was complex but centred on <b>risky mortgage lending</b> — banks gave home loans to millions of people who couldn't afford them, then packaged these loans into financial products sold around the world.
+
+When the US housing market crashed, these products became worthless overnight. Major banks including <b>Lehman Brothers</b> collapsed. Stock markets around the world plummeted. Credit froze — businesses couldn't borrow money to pay workers.
+
+The US government spent <b>$700 billion</b> to bail out the financial system — preventing a full collapse but sparking enormous public anger. Unemployment peaked at 10%. The crisis spread globally, causing recessions worldwide.
+
+The 2008 crash reshaped politics on both left and right, fuelling distrust of banks and institutions, and contributing to the political upheavals of the decade that followed.`,
+    q:'What was at the centre of the 2008 financial crisis?',
+    choices:['A stock market bubble in tech companies','Risky mortgage lending and housing market collapse','Government overspending','A foreign currency crisis'], a:'Risky mortgage lending and housing market collapse',
+    bonus:'The US government\'s $700 billion bank bailout was called TARP (Troubled Asset Relief Program) — and most of the money was eventually paid back, with profit.'
+  },
+  // ===== ANCIENT BATCH 3 =====
+  {
+    era:'ancient', emoji:'🐪', title:'Trade & the Ancient World',
+    lesson:`Long before coins existed, ancient peoples traded through <b>barter</b> — swapping goods directly. But barter has limits: what if you have wheat but need pottery, and the potter doesn\'t need wheat?\n\nThe solution was <b>money</b>. The first metal coins were minted in <b>Lydia</b> (modern-day Turkey) around 600 BC, made of electrum — a natural gold-silver alloy. Coins made trade far easier: standardised, portable, and accepted everywhere.\n\nBefore coins, some civilisations used <b>commodity money</b> — things with inherent value like grain, cattle, shells, or salt. The word "salary" comes from the Latin "salarium" — payment in salt — because Roman soldiers were sometimes paid in salt, which was extraordinarily valuable for preserving food.`,
+    q:'Where were the first metal coins minted, around 600 BC?',
+    choices:['Athens, Greece','Rome, Italy','Lydia (Turkey)','Babylon'], a:'Lydia (Turkey)',
+    bonus:'The word "salary" comes from the Latin for salt — because Roman soldiers were sometimes paid in salt, which was essential for preserving food.'
+  },
+  {
+    era:'ancient', emoji:'🏗️', title:'Ancient Engineering Marvels',
+    lesson:`Ancient engineers achieved feats that still astonish us today — without computers, power tools, or modern materials.\n\nThe Romans built <b>aqueducts</b> — stone channels carrying fresh water to cities over distances of up to 100 km, using only gravity and precise engineering. Rome\'s Aqua Claudia carried 190,000 cubic metres of water daily.\n\n<b>Archimedes</b> of Syracuse designed war machines, calculated pi, and invented the Archimedes screw — still used today for moving water and grain. In the Americas, the <b>Inca</b> built Machu Picchu at 2,400m altitude using massive stone blocks fitted so precisely that no mortar was needed — and they remain earthquake-resistant to this day.\n\nThese achievements show that human ingenuity and careful observation can overcome almost any engineering challenge — even without modern technology.`,
+    q:'What ancient structure carried fresh water to cities using only gravity and precise engineering?',
+    choices:['Aqueducts','Pyramids','Forums','Amphitheatres'], a:'Aqueducts',
+    bonus:'The Romans built over 500 km of aqueducts to supply the city of Rome alone — and the city received more water per person than many modern European cities today.'
+  },
+  {
+    era:'ancient', emoji:'📿', title:'Ancient Trade Routes & the Spice Trade',
+    lesson:`For thousands of years, <b>spices</b> were among the most valuable commodities on Earth. Black pepper, cinnamon, and nutmeg could fetch their weight in gold in European markets — because they preserved meat, masked the taste of rotting food, and were used as medicines.\n\nAll these spices came from South and Southeast Asia. Arab and Indian merchants controlled the <b>Indian Ocean trade routes</b>, buying spices cheaply at source and selling them at enormous markup to Europeans. This was one reason Europeans were so desperate to find their own sea routes to Asia.\n\nWhen the Portuguese reached India directly by sea in 1498, and when Columbus accidentally reached the Americas in 1492, the ancient spice trade routes were eventually broken — transforming global economics forever. The search for spices literally reshaped the map of the world.`,
+    q:'Why were spices like black pepper and nutmeg so extraordinarily valuable in medieval Europe?',
+    choices:['They were used as currency','They preserved meat, masked spoilage, and were used as medicine','They were required for religious ceremonies','They were gifts from kings'], a:'They preserved meat, masked spoilage, and were used as medicine',
+    bonus:'Nutmeg was once so valuable that the Dutch traded the entire island of Manhattan to the British in 1667 — in exchange for Run Island in Indonesia, where nutmeg grew.'
+  },
+  {
+    era:'ancient', emoji:'⚖️', title:'Ancient Law — Hammurabi\'s Code',
+    lesson:`Around 1750 BC, <b>Hammurabi</b>, king of Babylon, had a remarkable idea: write down the laws and display them publicly so that every citizen could know what was expected of them and what punishment awaited wrongdoing.\n\nThe <b>Code of Hammurabi</b> contained 282 laws covering everything from wages and trade to marriage, theft, and violence. Its most famous principle was <b>lex talionis</b> — "an eye for an eye, a tooth for a tooth" — the idea that punishment should fit the crime.\n\nThe code was carved into a tall black stone pillar — the <i>stele</i> — and placed in a public square. It is one of the oldest and most complete written legal codes ever discovered, and the idea that laws should be written, public, and consistent still underpins every modern legal system.`,
+    q:'What famous principle from Hammurabi\'s Code states that punishment should match the crime?',
+    choices:['"The greater good"','"An eye for an eye"','"Innocent until proven guilty"','"The will of the gods"'], a:'"An eye for an eye"',
+    bonus:'The original Hammurabi stele was found in Iran in 1901 and is now displayed in the Louvre Museum in Paris — where you can see it today.'
+  },
+  {
+    era:'ancient', emoji:'🌺', title:'Ancient Egypt — Daily Life on the Nile',
+    lesson:`For ordinary Egyptians, life revolved around the <b>Nile River</b>. Every year the Nile flooded, leaving behind rich black silt that made the surrounding land extraordinarily fertile — in stark contrast to the desert beyond. Egyptians called the fertile land "Kemet" (Black Land) and the desert "Deshret" (Red Land).\n\nMost Egyptians were <b>farmers</b>, growing wheat, barley, flax, and vegetables. They also fished the Nile and hunted birds in the marshes. Bread and beer were the staple foods — even paid as wages.\n\nEgyptian society valued <b>family and home life</b>. Women had significant legal rights compared to many other ancient civilisations — they could own property, run businesses, and go to court. Children played with wooden toys, balls, and dolls remarkably similar to modern ones. Cats were sacred animals, kept as pets and even mummified when they died.`,
+    q:'What did Egyptians call the fertile land beside the Nile, named for its rich dark soil?',
+    choices:['Deshret','Kemet','Khufu','Amun'], a:'Kemet',
+    bonus:'Cats were so sacred in ancient Egypt that killing one — even accidentally — could be punishable by death. When a cat died, the whole family shaved their eyebrows in mourning.'
+  },
+
+  // ===== MEDIEVAL BATCH 3 =====
+  {
+    era:'medieval', emoji:'🕍', title:'The Byzantine Empire',
+    lesson:`When the Western Roman Empire fell in 476 AD, the <b>Eastern Roman Empire</b> — centred on Constantinople (modern Istanbul) — survived for another thousand years, known to historians as the <b>Byzantine Empire</b>.\n\nByzantium preserved and transmitted Roman law, Greek philosophy, and Christian theology. Its capital Constantinople was the largest and wealthiest city in Europe for most of the Middle Ages, with half a million inhabitants at its peak.\n\nByzantine scholars kept ancient Greek texts alive — texts that, when they fled to Italy after Constantinople fell in 1453, helped spark the <b>Renaissance</b>. Emperor <b>Justinian I</b> compiled Roman law into the famous <b>Justinian Code</b>, the foundation of legal systems across Europe and Latin America to this day.`,
+    q:'When did the Eastern Roman (Byzantine) Empire finally fall?',
+    choices:['476 AD','800 AD','1066 AD','1453 AD'], a:'1453 AD',
+    bonus:'The word "Byzantine" has entered English to mean "excessively complicated and devious" — reflecting the empire\'s famously intricate court politics.'
+  },
+  {
+    era:'medieval', emoji:'⚗️', title:'Alchemy — The Precursor to Chemistry',
+    lesson:`For over a thousand years, scholars called <b>alchemists</b> pursued two great goals: transforming cheap metals into gold, and finding the "philosopher\'s stone" — an elixir that could grant eternal life.\n\nThey never achieved these goals. But along the way they developed crucial laboratory techniques — <b>distillation, filtration, crystallisation</b> — and discovered real chemical substances like acids, alcohol, and many compounds. Their careful (if misguided) experimentation laid the groundwork for modern <b>chemistry</b>.\n\n<b>Islamic alchemists</b> like Jabir ibn Hayyan (Geber) were especially influential, describing hundreds of chemical processes and substances. When their work was translated into Latin, European alchemists built on it — including figures like <b>Isaac Newton</b>, who spent more time on alchemy than on physics. Chemistry as a modern science grew directly from alchemy\'s experimental tradition.`,
+    q:'What practical scientific discipline grew directly out of alchemy?',
+    choices:['Physics','Astronomy','Chemistry','Biology'], a:'Chemistry',
+    bonus:'Isaac Newton wrote more words about alchemy than about mathematics and physics combined — though he kept his alchemical work largely secret.'
+  },
+  {
+    era:'medieval', emoji:'🎻', title:'Medieval Music & the Birth of Notation',
+    lesson:`Before the Middle Ages, music was passed down entirely by ear — there was no way to write it down. Then around 900 AD, a monk named <b>Guido of Arezzo</b> developed the musical <b>staff notation</b> — lines on which notes could be placed to show their pitch.\n\nThis was revolutionary. For the first time, a composer in Italy could write a piece of music that could be performed correctly in England, or a generation later, without the composer being present.\n\nMedieval music was dominated by the <b>Catholic Church</b>. <b>Gregorian chant</b> — smooth, single-voice melodies sung in Latin — filled cathedrals. As time went on, composers began layering voices together in <b>polyphony</b> — multiple melodies simultaneously. This eventually gave us the rich choral and orchestral music of later centuries. Everything from Bach to Beethoven to modern pop music notation traces back to that medieval monk\'s invention.`,
+    q:'Who invented musical staff notation around 900 AD?',
+    choices:['Johann Sebastian Bach','Pope Gregory I','Guido of Arezzo','Ludwig van Beethoven'], a:'Guido of Arezzo',
+    bonus:'Guido of Arezzo also invented the names of the musical notes: Do, Re, Mi, Fa, Sol, La — taken from the first syllables of a Latin hymn he used to teach singers.'
+  },
+  {
+    era:'medieval', emoji:'🏯', title:'Feudal Japan & the Samurai',
+    lesson:`While medieval Europe had its knights and castles, Japan had its own warrior class: the <b>samurai</b>. From around 1185 to 1868, Japan was ruled by military governments called <b>shogunates</b>, with the emperor serving as a ceremonial figurehead while real power rested with the shogun.\n\nSamurai followed a strict code of honour called <b>bushido</b> — "the way of the warrior" — emphasising loyalty, martial skill, and honour above life itself. They trained from childhood in swordsmanship, archery, and horsemanship.\n\nIn 1274 and 1281, <b>Kublai Khan</b>\'s Mongol fleet attempted to invade Japan. Both times, massive typhoons destroyed the fleets. Japanese sailors called these storms <b>kamikaze</b> — "divine winds" — believing the gods had protected Japan. The samurai class was abolished in 1868 as Japan modernised — but bushido ideals continued to shape Japanese culture.`,
+    q:'What was the samurai code of honour called?',
+    choices:['Budo','Bushido','Haiku','Daimyo'], a:'Bushido',
+    bonus:'The word "kamikaze" — the divine winds that destroyed the Mongol fleets — was later used in World War II for Japanese pilots who flew suicide missions into Allied ships.'
+  },
+  {
+    era:'medieval', emoji:'⛪', title:'The Protestant Reformation',
+    lesson:`In 1517, a German monk named <b>Martin Luther</b> nailed a list of 95 arguments — his <b>Ninety-Five Theses</b> — to the door of a church in Wittenberg, challenging the Catholic Church\'s practice of selling <b>indulgences</b> (payments said to reduce time in purgatory).\n\nLuther argued that salvation came from <b>faith alone</b>, not from Church rituals or payments — and that the Bible, not the Pope, was the ultimate authority. Thanks to Gutenberg\'s printing press, his ideas spread across Europe within weeks.\n\nThe result was a permanent split in Western Christianity. Lutherans, Calvinists, and many other <b>Protestant</b> denominations broke from the Catholic Church. The Reformation sparked over a century of religious wars, reshaped European politics, and was one of the forces that drove colonisation of the Americas by people seeking religious freedom.`,
+    q:'What sparked the Protestant Reformation in 1517?',
+    choices:['A peasant revolution against kings','Martin Luther challenging the sale of indulgences by the Church','A new Bible translation','The fall of Constantinople'], a:'Martin Luther challenging the sale of indulgences by the Church',
+    bonus:'Martin Luther was summoned before the Holy Roman Emperor to recant his ideas. His response: "Here I stand, I can do no other, God help me." He refused — and was declared an outlaw.'
+  },
+  {
+    era:'medieval', emoji:'🌊', title:'The Black Death — Aftermath',
+    lesson:`The <b>Black Death</b> killed so many people between 1347 and 1351 that it fundamentally changed European society in ways its survivors couldn\'t have predicted.\n\nWith one-third to half of the population dead, there was suddenly a <b>shortage of workers</b>. Peasants who survived found themselves in enormous demand — they could demand higher wages, better conditions, or simply move to wherever they were paid best. The old feudal system began to crack.\n\nThe plague also shook people\'s faith. How could God allow such horror? Some turned to <b>mysticism</b> and personal religious experience. Others questioned Church authority. This spiritual searching contributed to the Renaissance\'s emphasis on human reason and individual thought. Strangely, the death of tens of millions helped create the conditions for the most creative period in European history.`,
+    q:'How did the Black Death paradoxically help workers in surviving European society?',
+    choices:['It made farming easier','It created massive labour shortages giving surviving workers more bargaining power','It destroyed the Church','It brought new crops from Asia'], a:'It created massive labour shortages giving surviving workers more bargaining power',
+    bonus:'The Black Death inspired the artistic motif of the "Dance of Death" (Danse Macabre) — paintings showing skeletons leading people of all social classes in a dance toward death, emphasising that plague spared no one.'
+  },
+  {
+    era:'medieval', emoji:'🗺️', title:'Marco Polo & the Wonders of the East',
+    lesson:`In 1271, a 17-year-old Venetian merchant\'s son named <b>Marco Polo</b> set out with his father and uncle on a journey to China — a trip that would take 24 years and cover 24,000 miles.\n\nAt the court of <b>Kublai Khan</b>, Marco Polo served as a diplomat and observer for 17 years, travelling throughout China, Burma, India, and Persia. He witnessed technologies and wonders that Europe wouldn\'t see for centuries: paper money, coal (which he described as "black stones that burn"), the Grand Canal, and cities of millions.\n\nHis book <i>Il Milione</i> (The Travels of Marco Polo) described these marvels to astonished Europeans. Many dismissed it as fantasy. But his accounts directly inspired <b>Christopher Columbus</b>, who carried a copy annotated with his own notes when he set sail in 1492 — looking for the wealthy lands Marco Polo had described.`,
+    q:'Which explorer was directly inspired by Marco Polo\'s writings when he set sail in 1492?',
+    choices:['Vasco da Gama','Ferdinand Magellan','Christopher Columbus','Francis Drake'], a:'Christopher Columbus',
+    bonus:'Christopher Columbus carried a well-worn, heavily annotated copy of Marco Polo\'s travels when he set sail — he was literally looking for the lands Polo had described.'
+  },
+
+  // ===== MODERN BATCH 3 =====
+  {
+    era:'modern', emoji:'🌍', title:'The Scramble for Africa',
+    lesson:`In the 1880s, European powers — Britain, France, Germany, Belgium, Portugal, Italy, and Spain — raced to claim as much of Africa as possible in what historians call the <b>"Scramble for Africa."</b>\n\nAt the <b>Berlin Conference</b> of 1884–85, European leaders sat around a table and drew borders across the African continent — carving it into colonies with no input from African peoples and little regard for existing kingdoms, languages, or ethnic groups.\n\nBy 1914, European nations controlled <b>90% of Africa</b>. Colonial rule was often brutal — forcing Africans to work, taking their land and resources, and suppressing their cultures. The Belgian Congo under King Leopold II was especially horrific — millions died in what scholars now call a genocide.\n\nThe borders drawn at Berlin still define African nations today — which is one reason many African countries contain dozens of ethnic groups with very different languages and histories, a legacy that has caused conflicts ever since independence.`,
+    q:'At what conference did European powers divide Africa into colonies in 1884-85?',
+    choices:['The Paris Conference','The Vienna Congress','The Berlin Conference','The London Summit'], a:'The Berlin Conference',
+    bonus:'Not a single African leader was invited to the Berlin Conference where European powers divided their continent.'
+  },
+  {
+    era:'modern', emoji:'✊', title:'Gandhi & Indian Independence',
+    lesson:`By the early 20th century, India had been under British rule for nearly 200 years. A lawyer named <b>Mohandas Gandhi</b> developed a revolutionary strategy for resistance: <b>nonviolent civil disobedience</b>. Instead of fighting with weapons, Indians would refuse to cooperate with British rule — peacefully, but stubbornly.\n\nGandhi\'s most famous action was the <b>Salt March</b> of 1930. The British taxed salt and banned Indians from collecting their own. Gandhi walked 240 miles to the sea and picked up a handful of salt — breaking the law. Millions followed his example. The British response — beating peaceful protestors — shocked the world.\n\nAfter decades of struggle, Britain granted India independence on August 15, <b>1947</b>. But independence came with <b>Partition</b> — dividing the subcontinent into Hindu-majority India and Muslim-majority Pakistan, triggering one of history\'s largest and most violent mass migrations: 14 million people displaced, and up to 2 million killed.`,
+    q:'What was Gandhi\'s famous 1930 protest against British salt taxes called?',
+    choices:['The Bombay March','The Independence Walk','The Salt March','The Freedom March'], a:'The Salt March',
+    bonus:'Gandhi was nominated for the Nobel Peace Prize five times but never won it. After his assassination in 1948, the Nobel Committee decided not to award the Peace Prize that year, saying no suitable living candidate existed.'
+  },
+  {
+    era:'modern', emoji:'🧠', title:'The Theory of Evolution',
+    lesson:`In 1859, English naturalist <b>Charles Darwin</b> published <i>On the Origin of Species</i>, presenting his theory of <b>evolution by natural selection</b>. It would become one of the most important — and controversial — ideas in history.\n\nDarwin had spent years observing animals in the wild, particularly during his voyage on HMS Beagle. He noticed that animals had variations within species, and that those better adapted to their environment survived to reproduce — passing on their traits. Over millions of generations, this process of <b>natural selection</b> could produce entirely new species.\n\nThe implications were profound: all life on Earth — including humans — was connected through common ancestors and shaped by the same process. The theory was deeply controversial for conflicting with religious accounts of creation. Today, evolution is the foundation of all modern biology, medicine, and our understanding of life itself.`,
+    q:'What was the name of Darwin\'s theory explaining how species change over time?',
+    choices:['Survival of the fittest','Natural selection','Genetic mutation','Adaptive radiation'], a:'Natural selection',
+    bonus:'Darwin delayed publishing his theory for over 20 years because he knew how controversial it would be. He only rushed to publish when another scientist, Alfred Russel Wallace, independently arrived at the same conclusion.'
+  },
+  {
+    era:'modern', emoji:'☢️', title:'The Manhattan Project & the Atomic Age',
+    lesson:`In 1939, a letter from physicist <b>Albert Einstein</b> warned President Roosevelt that Nazi Germany might be developing a nuclear bomb. Roosevelt launched a secret research programme: the <b>Manhattan Project</b>.\n\nThousands of scientists and engineers worked in secret at sites across America, including Los Alamos in New Mexico under physicist <b>J. Robert Oppenheimer</b>. On July 16, 1945, they detonated the first nuclear bomb in the New Mexico desert — the <b>Trinity test</b>. Oppenheimer recalled a Hindu scripture: "Now I am become death, the destroyer of worlds."\n\nOn August 6 and 9, 1945, the US dropped atomic bombs on the Japanese cities of <b>Hiroshima and Nagasaki</b>, killing 130,000–226,000 people instantly or from radiation. Japan surrendered, ending World War II. The nuclear age had begun — and with it, the existential possibility of human civilisation\'s destruction.`,
+    q:'Who led the scientific team that built the first atomic bomb?',
+    choices:['Albert Einstein','Enrico Fermi','J. Robert Oppenheimer','Niels Bohr'], a:'J. Robert Oppenheimer',
+    bonus:'Albert Einstein — whose letter helped launch the Manhattan Project — never worked on it directly. He was considered a security risk by the US government because of his pacifist views.'
+  },
+  {
+    era:'modern', emoji:'📡', title:'The Information Age',
+    lesson:`In the late 20th century, humanity entered the <b>Information Age</b> — an era defined by digital technology, computers, and the ability to create, share, and access information instantly.\n\nThe invention of the <b>transistor</b> in 1947 made modern computers possible — tiny electronic switches that could be packed by the billions onto microchips. <b>Moore\'s Law</b> (1965) observed that computing power roughly doubled every two years — a trend that held remarkably well for decades, driving exponential technological progress.\n\nThe smartphone — essentially a powerful computer in your pocket — arrived with Apple\'s <b>iPhone in 2007</b>. Today over 6 billion people own smartphones. <b>Artificial intelligence</b> is now the next frontier: machines that can learn, generate text, images, and music, and assist with complex decisions — with implications we are only beginning to understand.`,
+    q:'What 1965 observation noted that computing power doubles roughly every two years?',
+    choices:['Einstein\'s Law','Turing\'s Theorem','Moore\'s Law','Shannon\'s Principle'], a:'Moore\'s Law',
+    bonus:'The first Apple iPhone had 128MB of RAM. A modern phone has 12,000MB — a 100-fold increase in just 17 years, roughly matching Moore\'s Law predictions.'
+  },
+  {
+    era:'modern', emoji:'🌐', title:'The United Nations & World Peace',
+    lesson:`After two catastrophic World Wars, world leaders determined to create an organisation to prevent future conflicts. In 1945, representatives from 50 nations signed the <b>United Nations Charter</b>, creating the <b>United Nations</b>.\n\nThe UN\'s aims were ambitious: maintain international peace, develop friendly relations between nations, promote human rights, and encourage international cooperation. Its <b>Security Council</b> — with five permanent members (US, UK, France, China, Russia) each holding a veto — was charged with authorising international military action.\n\nThe UN has prevented some wars, provided crucial humanitarian aid in disasters, and created landmark agreements like the <b>Universal Declaration of Human Rights</b> (1948). But it has also been criticised for ineffectiveness when powerful nations disagree. Today, with 193 member states, it remains the closest thing the world has to a global government — imperfect but indispensable.`,
+    q:'In what year was the United Nations founded?',
+    choices:['1919','1939','1945','1950'], a:'1945',
+    bonus:'The Universal Declaration of Human Rights was drafted largely by Eleanor Roosevelt, wife of President FDR — and adopted unanimously by the UN in 1948 in the aftermath of the Holocaust.'
+  },
+  {
+    era:'modern', emoji:'🧬', title:'The Human Genome Project',
+    lesson:`In 1990, scientists launched one of the most ambitious scientific projects in history: to read and record every single letter of the <b>human genetic code</b> — all 3.2 billion base pairs of DNA.\n\nThe <b>Human Genome Project</b> was a global collaboration involving scientists from the US, UK, France, Germany, Japan, and China. Completed in 2003 — two years ahead of schedule — it produced the first complete map of the human genome.\n\nThe implications were extraordinary: scientists could now identify genes linked to cancer, heart disease, and hundreds of inherited conditions. It gave birth to <b>personalised medicine</b> — the idea of tailoring treatments to an individual\'s genetic makeup. The cost of sequencing a single person\'s genome has fallen from $3 billion in 2003 to under $1,000 today, making it increasingly accessible. Understanding our genetic blueprint is transforming medicine, agriculture, and our understanding of human history.`,
+    q:'How many base pairs make up the complete human genome?',
+    choices:['3.2 million','3.2 billion','320 million','32 billion'], a:'3.2 billion',
+    bonus:'The cost of sequencing one person\'s complete genome fell from $3 billion in 2003 to under $1,000 today — a price drop faster than any other technology in history.'
+  },
+
+  // ===== AMERICAN BATCH 3 =====
+  {
+    era:'american', emoji:'🏛️', title:'The Constitutional Convention',
+    lesson:`After winning independence, America\'s first attempt at national government — the <b>Articles of Confederation</b> — was a disaster. The federal government had no power to tax, no way to enforce laws, and no president. States acted almost like separate countries.\n\nIn 1787, delegates gathered in Philadelphia for a <b>Constitutional Convention</b> that was supposed to fix the Articles — but instead created an entirely new government. Over four sweltering summer months, they debated and compromised on nearly everything: how many votes each state should get, whether enslaved people counted as citizens, how much power the president should have.\n\nThe result was the <b>US Constitution</b> — a brief, elegant document of just 4,543 words that has governed the world\'s oldest democracy ever since. The first ten amendments — the <b>Bill of Rights</b> — were added immediately, protecting freedom of speech, religion, press, and other fundamental liberties.`,
+    q:'How many words long is the original US Constitution (without amendments)?',
+    choices:['4,543 words','10,000 words','45,000 words','1,776 words'], a:'4,543 words',
+    bonus:'The US Constitution is the world\'s oldest written national constitution still in use. It has only been amended 27 times in over 230 years.'
+  },
+  {
+    era:'american', emoji:'🚂', title:'The Transcontinental Railroad',
+    lesson:`On May 10, 1869, at Promontory Summit in Utah, workers drove a <b>golden spike</b> into the ground to mark the completion of the first Transcontinental Railroad — connecting the East and West coasts of America for the first time.\n\nThe project was extraordinary in its ambition and scale. The <b>Central Pacific</b> built eastward from California, employing thousands of Chinese immigrants. The <b>Union Pacific</b> built westward, employing many Irish immigrants and Civil War veterans. Both groups worked in brutal conditions for low pay through mountains, deserts, and extreme temperatures.\n\nThe railroad shrank a cross-country journey from six months by wagon to just six days. It transformed the American economy, enabled mass settlement of the West, and made the US a true continental nation. It also accelerated the destruction of the Great Plains <b>buffalo herds</b> and the Native American cultures that depended on them.`,
+    q:'What symbolic object was driven into the ground to celebrate the Transcontinental Railroad\'s completion in 1869?',
+    choices:['A silver nail','A golden spike','An iron bolt','A bronze key'], a:'A golden spike',
+    bonus:'The Chinese workers who built the Central Pacific were paid $26-35 per month — while white workers doing the same job earned $35 plus food and lodging.'
+  },
+  {
+    era:'american', emoji:'🌙', title:'The Apollo Programme',
+    lesson:`After Yuri Gagarin became the first human in space in 1961, President Kennedy challenged NASA to land on the Moon by the end of the decade — a seemingly impossible goal when America had only put one astronaut in space for 15 minutes.\n\nNASA\'s <b>Apollo programme</b> ran 17 missions. <b>Apollo 1</b> ended in tragedy when a fire during a ground test killed three astronauts. <b>Apollo 8</b> in 1968 was the first crewed mission to orbit the Moon — astronauts broadcast a reading from Genesis on Christmas Eve, seen by 1 billion viewers.\n\n<b>Apollo 13</b> in 1970 suffered an oxygen tank explosion on the way to the Moon. "Houston, we have a problem." Through extraordinary improvisation by astronauts and ground crew, all three astronauts survived.\n\nApollo 17 in 1972 was the last Moon mission. The last person to walk on the Moon was <b>Gene Cernan</b>, who wrote his daughter\'s initials in the lunar dust before climbing back into the spacecraft.`,
+    q:'What was the famous problem radioed back to Houston during Apollo 13?',
+    choices:['Engine failure','Navigation error','Oxygen tank explosion','Fuel leak'], a:'Oxygen tank explosion',
+    bonus:'The last words spoken on the Moon were by Gene Cernan in 1972: "We leave as we came, and God willing, as we shall return, with peace and hope for all mankind."'
+  },
+  {
+    era:'american', emoji:'⚡', title:'The New Deal — TVA and Harnessing a River',
+    lesson:`When Franklin Roosevelt launched the New Deal in 1933, one of its most ambitious projects was the <b>Tennessee Valley Authority (TVA)</b> — a federal agency to transform one of America\'s poorest regions.\n\nThe Tennessee Valley — spanning seven states in the rural South — suffered from chronic poverty, flooding, and lack of electricity. The TVA built a system of <b>dams</b> that controlled flooding, provided cheap electricity, and created thousands of construction jobs.\n\nElectrification transformed the region. Before TVA, only 3% of rural Tennessee farms had electricity. Within 20 years, nearly all did. Electric lights, refrigerators, and pumps replaced oil lamps and hand labour. Crop yields increased. Industries moved in to access cheap power.\n\nThe TVA remains controversial — it displaced thousands of families and flooded communities to create its reservoirs. But it demonstrated that government investment could transform a region\'s economy and is still studied as a model of regional development.`,
+    q:'What percentage of rural Tennessee farms had electricity before the TVA was created?',
+    choices:['3%','25%','50%','75%'], a:'3%',
+    bonus:'The TVA still operates today — it provides electricity to 10 million people across 7 states, and its hydroelectric dams are visited by millions of tourists each year.'
+  },
+  {
+    era:'american', emoji:'🎬', title:'Hollywood & American Culture',
+    lesson:`In the early 20th century, a small town in Southern California called <b>Hollywood</b> became the centre of the global film industry — almost by accident. Filmmakers moved there from New York to escape patent lawsuits and to take advantage of the reliable sunshine for outdoor filming.\n\nBy the 1930s, the <b>Hollywood studio system</b> dominated global entertainment. During the Depression and World War II, cinema offered escapism and morale — people packed theatres to see Fred Astaire, Charlie Chaplin, and Humphrey Bogart. The <b>Golden Age of Hollywood</b> produced classics like Casablanca, Gone with the Wind, and Citizen Kane.\n\nHollywood became one of America\'s most powerful tools of <b>soft power</b> — exporting American values, language, fashion, and aspirations worldwide. Today, while streaming platforms have disrupted the traditional studio model, Hollywood still shapes global culture — with films, TV shows, and music reaching billions of people in every country.`,
+    q:'Why did early filmmakers move to Hollywood from New York in the 1900s?',
+    choices:['Lower taxes','To escape patent lawsuits and for reliable sunshine','Better actors','Government subsidies'], a:'To escape patent lawsuits and for reliable sunshine',
+    bonus:'The Hollywood sign originally said "HOLLYWOODLAND" — it was built in 1923 as an advertisement for a housing development. The "LAND" was removed in 1949.'
+  },
+  {
+    era:'american', emoji:'🌊', title:'The Lewis & Clark Expedition',
+    lesson:`In 1803, President <b>Thomas Jefferson</b> purchased 828,000 square miles of land from France — the <b>Louisiana Purchase</b> — doubling the size of the United States overnight, for just 3 cents per acre.\n\nJefferson immediately commissioned an expedition to explore this vast unknown territory. In 1804, <b>Meriwether Lewis and William Clark</b> set out from St. Louis with about 33 people, tasked with reaching the Pacific Ocean, mapping the land, and documenting the plants, animals, and peoples they encountered.\n\nCrucial to their success was <b>Sacagawea</b>, a Shoshone woman who joined the expedition as a guide and interpreter. Her knowledge of the land, her languages, and her presence — which signalled peaceful intent to Native peoples — was invaluable. The expedition reached the Pacific in November 1805, returning in 1806 with remarkable maps and journals that opened the West to American settlement.`,
+    q:'Who was the Shoshone woman who served as guide and interpreter for the Lewis and Clark expedition?',
+    choices:['Pocahontas','Sacagawea','Sequoyah','Running Water'], a:'Sacagawea',
+    bonus:'The Louisiana Purchase cost the US about $15 million — roughly 3 cents per acre. Today that land is worth trillions. It is considered one of the greatest bargains in history.'
+  },
+  {
+    era:'american', emoji:'🗽', title:'Ellis Island & the Immigrant Experience',
+    lesson:`Between 1892 and 1954, over <b>12 million immigrants</b> entered the United States through <b>Ellis Island</b> — a small island in New York Harbor, in the shadow of the Statue of Liberty.\n\nThe experience was both hopeful and terrifying. After weeks at sea in crowded ship steerage, passengers climbed to the Great Hall where they were inspected by doctors (who marked coats with chalk if they spotted possible illness) and questioned by officials. The whole process took 3–5 hours. Only about 2% were turned away.\n\nAmong those who passed through Ellis Island were ancestors of roughly <b>40% of all Americans</b> alive today — Italian, Jewish, Polish, Hungarian, Slovak, Greek, and dozens of other nationalities. Their labour built American cities and industries. Ellis Island closed in 1954 and is now a museum visited by millions who come to look up their family history in its records.`,
+    q:'What percentage of Americans today have ancestors who passed through Ellis Island?',
+    choices:['About 10%','About 25%','About 40%','Almost 75%'], a:'About 40%',
+    bonus:'The island got its name from Samuel Ellis, a merchant who owned it in the 1770s. He sold it to the state of New York, which sold it to the federal government, which turned it into the immigration station.'
+  },
+
+];
+
+let historyList = [...ALL_HISTORY];
+let historyIdx = 0;
+let historyEra = 'all';
+let historyAnswered = false;
+let hCorrect = 0, hWrong = 0;
+
+function filterHistory(era, btn) {
+  document.querySelectorAll('.h-filter-btn').forEach(b => b.classList.remove('active'));
+  btn.classList.add('active');
+  historyEra = era;
+  historyList = era === 'all' ? [...ALL_HISTORY] : ALL_HISTORY.filter(h => h.era === era);
+  historyIdx = 0;
+  loadHistoryCard();
+}
+
+function loadHistoryCard() {
+  if (!historyList.length) return;
+  historyAnswered = false;
+  const h = historyList[historyIdx];
+
+  // Era badge colours
+  const eraColors = { ancient:'#7C3AED', medieval:'#1D4ED8', modern:'#065F46', american:'#B91C1C' };
+  const badge = document.getElementById('hEraBadge');
+  badge.textContent = h.era.charAt(0).toUpperCase() + h.era.slice(1);
+  badge.style.background = eraColors[h.era] || '#92400E';
+
+  document.getElementById('hLessonEmoji').textContent = h.emoji;
+  document.getElementById('hLessonTitle').textContent = h.title;
+  document.getElementById('hLessonBody').innerHTML = h.lesson.replace(/\n/g, '<br>');
+
+  // Reset quiz
+  document.getElementById('hQuizPanel').style.display = 'none';
+  document.getElementById('hQuizFact').style.display = 'none';
+  document.getElementById('hQuizChoices').innerHTML = '';
+
+  const quizBtn = document.querySelector('.h-quiz-btn');
+  quizBtn.textContent = 'Quiz me! 🎯';
+  quizBtn.disabled = false;
+
+  document.getElementById('hProgress').textContent =
+    'Lesson ' + (historyIdx + 1) + ' of ' + historyList.length;
+  document.getElementById('hCorrect').textContent = hCorrect;
+  document.getElementById('hWrong').textContent = hWrong;
+}
+
+function showHistoryQuiz() {
+  const h = historyList[historyIdx];
+  const panel = document.getElementById('hQuizPanel');
+  panel.style.display = 'block';
+  document.getElementById('hQuizQ').textContent = h.q;
+  document.getElementById('hQuizFact').style.display = 'none';
+
+  const choicesDiv = document.getElementById('hQuizChoices');
+  choicesDiv.innerHTML = '';
+  const shuffled = shuffle([...h.choices]);
+  shuffled.forEach(choice => {
+    const btn = document.createElement('button');
+    btn.className = 'h-choice';
+    btn.textContent = choice;
+    btn.onclick = () => checkHistoryAnswer(choice, h.a, h.bonus, btn);
+    choicesDiv.appendChild(btn);
+  });
+
+  document.querySelector('.h-quiz-btn').disabled = true;
+  panel.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+}
+
+function checkHistoryAnswer(choice, correct, bonus, btn) {
+  if (historyAnswered) return;
+  historyAnswered = true;
+
+  document.querySelectorAll('.h-choice').forEach(b => {
+    b.disabled = true;
+    if (b.textContent === correct) b.classList.add('h-correct');
+  });
+
+  if (choice === correct) {
+    btn.classList.add('h-correct');
+    hCorrect++;
+    showFeedback(true);
+  } else {
+    btn.classList.add('h-wrong');
+    hWrong++;
+    showFeedback(false);
+  }
+
+  document.getElementById('hCorrect').textContent = hCorrect;
+  document.getElementById('hWrong').textContent = hWrong;
+
+  const fact = document.getElementById('hQuizFact');
+  fact.textContent = '⭐ Bonus fact: ' + bonus;
+  fact.style.display = 'block';
+}
+
+function nextHistory() {
+  historyIdx = (historyIdx + 1) % historyList.length;
+  loadHistoryCard();
+}
+
+function prevHistory() {
+  historyIdx = (historyIdx - 1 + historyList.length) % historyList.length;
+  loadHistoryCard();
+}
+
+
+</script>
+</body>
+</html>
