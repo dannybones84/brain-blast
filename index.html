@@ -1,0 +1,1429 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Brain Blast! 🧠✨</title>
+
+<style>
+  :root {
+    --sky: #FFE066;
+    --coral: #FF6B6B;
+    --mint: #4ECDC4;
+    --purple: #A855F7;
+    --pink: #FF9ECD;
+    --blue: #5B9BD5;
+    --card-w: 380px;
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    font-family: 'Comic Sans MS', 'Chalkboard SE', 'Marker Felt', cursive;
+    background: #FFF8E7;
+    min-height: 100vh;
+    overflow-x: hidden;
+    position: relative;
+  }
+
+  /* Floating stars background */
+  .bg-star {
+    position: fixed;
+    font-size: 1.5rem;
+    opacity: 0.18;
+    animation: float linear infinite;
+    pointer-events: none;
+    z-index: 0;
+  }
+
+  @keyframes float {
+    0% { transform: translateY(110vh) rotate(0deg); }
+    100% { transform: translateY(-10vh) rotate(360deg); }
+  }
+
+  header {
+    text-align: center;
+    padding: 28px 20px 10px;
+    position: relative;
+    z-index: 1;
+  }
+
+  header h1 {
+    font-family: 'Comic Sans MS', 'Chalkboard SE', 'Marker Felt', cursive;
+    font-size: 3rem;
+    color: var(--coral);
+    text-shadow: 4px 4px 0 #FFB347, 8px 8px 0 rgba(0,0,0,0.08);
+    letter-spacing: 2px;
+  }
+
+  .subtitle {
+    font-size: 1rem;
+    color: #777;
+    font-weight: 700;
+    margin-top: 4px;
+  }
+
+  .scoreboard {
+    display: flex;
+    justify-content: center;
+    gap: 28px;
+    margin: 14px auto 6px;
+    flex-wrap: wrap;
+    position: relative;
+    z-index: 1;
+  }
+
+  .score-box {
+    background: white;
+    border-radius: 18px;
+    padding: 8px 22px;
+    font-size: 1rem;
+    font-weight: 800;
+    box-shadow: 0 4px 0 rgba(0,0,0,0.08);
+    display: flex;
+    align-items: center;
+    gap: 6px;
+  }
+
+  .score-box.correct { color: #22C55E; border: 3px solid #22C55E; }
+  .score-box.wrong { color: var(--coral); border: 3px solid var(--coral); }
+  .score-box.streak { color: var(--purple); border: 3px solid var(--purple); }
+
+  /* Category selector */
+  .categories {
+    display: flex;
+    justify-content: center;
+    gap: 10px;
+    flex-wrap: wrap;
+    margin: 10px auto 18px;
+    padding: 0 16px;
+    max-width: 700px;
+    position: relative;
+    z-index: 1;
+  }
+
+  .cat-btn {
+    background: white;
+    border: 3px solid transparent;
+    border-radius: 50px;
+    padding: 6px 18px;
+    font-family: 'Comic Sans MS', 'Chalkboard SE', 'Marker Felt', cursive;
+    font-size: 0.9rem;
+    font-weight: 800;
+    cursor: pointer;
+    transition: all 0.2s;
+    box-shadow: 0 3px 0 rgba(0,0,0,0.10);
+  }
+
+  .cat-btn:hover { transform: translateY(-2px); }
+  .cat-btn.active { color: white; transform: translateY(-2px) scale(1.06); }
+  .cat-btn[data-cat="math"] { border-color: var(--blue); color: var(--blue); }
+  .cat-btn[data-cat="math"].active { background: var(--blue); }
+  .cat-btn[data-cat="animals"] { border-color: #22C55E; color: #22C55E; }
+  .cat-btn[data-cat="animals"].active { background: #22C55E; }
+  .cat-btn[data-cat="words"] { border-color: var(--purple); color: var(--purple); }
+  .cat-btn[data-cat="words"].active { background: var(--purple); }
+  .cat-btn[data-cat="science"] { border-color: var(--coral); color: var(--coral); }
+  .cat-btn[data-cat="science"].active { background: var(--coral); }
+  .cat-btn[data-cat="all"] { border-color: #F59E0B; color: #F59E0B; }
+  .cat-btn[data-cat="all"].active { background: #F59E0B; }
+
+  /* Card area */
+  .card-area {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding: 0 20px 20px;
+    position: relative;
+    z-index: 1;
+  }
+
+  .progress-bar-wrap {
+    width: 100%;
+    max-width: var(--card-w);
+    height: 12px;
+    background: #E5E7EB;
+    border-radius: 99px;
+    margin-bottom: 16px;
+    overflow: hidden;
+  }
+
+  .progress-fill {
+    height: 100%;
+    background: linear-gradient(90deg, var(--mint), var(--blue));
+    border-radius: 99px;
+    transition: width 0.5s ease;
+  }
+
+  /* Flip card */
+  .card-scene {
+    width: var(--card-w);
+    max-width: 100%;
+    height: 260px;
+    perspective: 1000px;
+    cursor: pointer;
+    margin-bottom: 22px;
+  }
+
+  .card-inner {
+    width: 100%;
+    height: 100%;
+    position: relative;
+    transform-style: preserve-3d;
+    transition: transform 0.55s cubic-bezier(0.4,0,0.2,1);
+  }
+
+  .card-inner.flipped { transform: rotateY(180deg); }
+
+  .card-face {
+    position: absolute;
+    width: 100%;
+    height: 100%;
+    backface-visibility: hidden;
+    border-radius: 28px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 28px 24px;
+    text-align: center;
+    box-shadow: 0 10px 40px rgba(0,0,0,0.13), 0 6px 0 rgba(0,0,0,0.08);
+  }
+
+  .card-front {
+    background: white;
+    border: 4px solid var(--mint);
+  }
+
+  .card-back {
+    background: linear-gradient(135deg, #ECFDF5, #D1FAE5);
+    border: 4px solid #22C55E;
+    transform: rotateY(180deg);
+  }
+
+  .card-emoji {
+    font-size: 3rem;
+    margin-bottom: 10px;
+    animation: popIn 0.4s cubic-bezier(0.34,1.56,0.64,1);
+  }
+
+  @keyframes popIn {
+    from { transform: scale(0.5); opacity: 0; }
+    to { transform: scale(1); opacity: 1; }
+  }
+
+  .card-question {
+    font-size: 1.35rem;
+    font-weight: 800;
+    color: #1E293B;
+    line-height: 1.35;
+  }
+
+  .card-answer {
+    font-size: 1.55rem;
+    font-weight: 800;
+    color: #166534;
+  }
+
+  .card-hint {
+    font-size: 0.85rem;
+    color: #888;
+    margin-top: 8px;
+    font-weight: 600;
+  }
+
+  .flip-label {
+    font-size: 0.78rem;
+    color: #aaa;
+    font-weight: 700;
+    letter-spacing: 0.5px;
+    margin-top: 10px;
+  }
+
+  /* Answer buttons */
+  .choices {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 12px;
+    width: 100%;
+    max-width: var(--card-w);
+    margin-bottom: 18px;
+  }
+
+  .choice-btn {
+    background: white;
+    border: 3px solid #E2E8F0;
+    border-radius: 18px;
+    padding: 14px 10px;
+    font-family: 'Comic Sans MS', 'Chalkboard SE', 'Marker Felt', cursive;
+    font-size: 1rem;
+    font-weight: 800;
+    cursor: pointer;
+    transition: all 0.18s;
+    box-shadow: 0 4px 0 rgba(0,0,0,0.08);
+    color: #1E293B;
+  }
+
+  .choice-btn:hover:not(:disabled) {
+    border-color: var(--mint);
+    transform: translateY(-3px);
+    box-shadow: 0 7px 0 rgba(78,205,196,0.25);
+  }
+
+  .choice-btn.correct-ans {
+    background: #DCFCE7;
+    border-color: #22C55E;
+    color: #15803D;
+    animation: bounce 0.35s ease;
+  }
+
+  .choice-btn.wrong-ans {
+    background: #FEE2E2;
+    border-color: var(--coral);
+    color: #B91C1C;
+    animation: shake 0.35s ease;
+  }
+
+  @keyframes bounce {
+    0%,100% { transform: translateY(0); }
+    40% { transform: translateY(-10px); }
+  }
+
+  @keyframes shake {
+    0%,100% { transform: translateX(0); }
+    25% { transform: translateX(-8px); }
+    75% { transform: translateX(8px); }
+  }
+
+  .nav-btns {
+    display: flex;
+    gap: 14px;
+  }
+
+  .nav-btn {
+    background: var(--coral);
+    color: white;
+    border: none;
+    border-radius: 50px;
+    padding: 12px 32px;
+    font-family: 'Comic Sans MS', 'Chalkboard SE', 'Marker Felt', cursive;
+    font-size: 1.1rem;
+    cursor: pointer;
+    box-shadow: 0 5px 0 #c94b4b;
+    transition: all 0.15s;
+    letter-spacing: 0.5px;
+  }
+
+  .nav-btn:hover { transform: translateY(-3px); box-shadow: 0 8px 0 #c94b4b; }
+  .nav-btn:active { transform: translateY(2px); box-shadow: 0 2px 0 #c94b4b; }
+  .nav-btn.secondary {
+    background: var(--mint);
+    box-shadow: 0 5px 0 #2da39c;
+  }
+  .nav-btn.secondary:hover { box-shadow: 0 8px 0 #2da39c; }
+  .nav-btn.secondary:active { box-shadow: 0 2px 0 #2da39c; }
+
+  /* Feedback popup */
+  .feedback {
+    position: fixed;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%) scale(0);
+    background: white;
+    border-radius: 30px;
+    padding: 28px 40px;
+    font-family: 'Comic Sans MS', 'Chalkboard SE', 'Marker Felt', cursive;
+    font-size: 2rem;
+    text-align: center;
+    z-index: 100;
+    box-shadow: 0 20px 60px rgba(0,0,0,0.2);
+    transition: transform 0.3s cubic-bezier(0.34,1.56,0.64,1);
+    pointer-events: none;
+  }
+
+  .feedback.show { transform: translate(-50%, -50%) scale(1); }
+  .feedback.good { color: #22C55E; border: 4px solid #22C55E; }
+  .feedback.bad { color: var(--coral); border: 4px solid var(--coral); }
+
+  /* Win screen */
+  .win-screen {
+    display: none;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    text-align: center;
+    padding: 30px 20px;
+    position: relative;
+    z-index: 1;
+  }
+
+  .win-screen.show { display: flex; }
+  .win-screen h2 {
+    font-family: 'Comic Sans MS', 'Chalkboard SE', 'Marker Felt', cursive;
+    font-size: 2.8rem;
+    color: var(--coral);
+    text-shadow: 4px 4px 0 #FFB347;
+    margin-bottom: 8px;
+  }
+
+  .win-stars {
+    font-size: 3rem;
+    margin: 10px 0;
+    animation: popIn 0.5s ease both;
+  }
+
+  .win-score {
+    font-size: 1.2rem;
+    font-weight: 800;
+    color: #555;
+    margin-bottom: 24px;
+  }
+
+  /* confetti */
+  .confetti-piece {
+    position: fixed;
+    width: 10px;
+    height: 14px;
+    top: -20px;
+    border-radius: 2px;
+    animation: confettiFall linear forwards;
+    pointer-events: none;
+    z-index: 200;
+  }
+
+  @keyframes confettiFall {
+    to { transform: translateY(110vh) rotate(720deg); opacity: 0; }
+  }
+
+  @media (max-width: 420px) {
+    header h1 { font-size: 2.2rem; }
+    .card-scene { height: 220px; }
+    .card-question { font-size: 1.15rem; }
+  }
+
+  /* ---- MODE TOGGLE ---- */
+  .mode-toggle {
+    display: flex;
+    justify-content: center;
+    gap: 0;
+    margin: 18px auto 0;
+    background: #F0EDE6;
+    border-radius: 50px;
+    padding: 5px;
+    width: fit-content;
+    box-shadow: inset 0 2px 6px rgba(0,0,0,0.10);
+    position: relative;
+    z-index: 1;
+  }
+
+  .mode-btn {
+    background: transparent;
+    border: none;
+    border-radius: 50px;
+    padding: 10px 26px;
+    font-family: 'Comic Sans MS', 'Chalkboard SE', 'Marker Felt', cursive;
+    font-size: 1rem;
+    font-weight: 800;
+    cursor: pointer;
+    color: #999;
+    transition: all 0.25s;
+  }
+
+  .mode-btn.active {
+    background: white;
+    color: #1E293B;
+    box-shadow: 0 3px 10px rgba(0,0,0,0.12);
+  }
+
+  /* ---- DINNER TABLE SECTION ---- */
+  #dinnerSection {
+    display: none;
+    flex-direction: column;
+    align-items: center;
+    padding: 24px 20px 40px;
+    position: relative;
+    z-index: 1;
+  }
+
+  .dinner-filter {
+    display: flex;
+    justify-content: center;
+    gap: 8px;
+    flex-wrap: wrap;
+    margin-bottom: 24px;
+    max-width: 480px;
+  }
+
+  .d-filter-btn {
+    background: white;
+    border: 2.5px solid #E2E8F0;
+    border-radius: 50px;
+    padding: 5px 16px;
+    font-family: 'Comic Sans MS', 'Chalkboard SE', 'Marker Felt', cursive;
+    font-size: 0.85rem;
+    font-weight: 800;
+    cursor: pointer;
+    color: #888;
+    transition: all 0.2s;
+  }
+
+  .d-filter-btn.active,
+  .d-filter-btn:hover {
+    border-color: #F59E0B;
+    color: #92400E;
+    background: #FEF3C7;
+    transform: translateY(-1px);
+  }
+
+  /* The big dinner card */
+  .dinner-card-wrap {
+    width: 340px;
+    max-width: 100%;
+    position: relative;
+    margin-bottom: 28px;
+  }
+
+  /* stack illusion cards behind */
+  .dinner-card-wrap::before,
+  .dinner-card-wrap::after {
+    content: '';
+    position: absolute;
+    width: 100%;
+    height: 100%;
+    border-radius: 28px;
+    top: 0; left: 0;
+  }
+
+  .dinner-card-wrap::after {
+    background: #FBBF24;
+    transform: rotate(3deg) translateY(6px);
+    z-index: 0;
+  }
+
+  .dinner-card-wrap::before {
+    background: #FCD34D;
+    transform: rotate(-2deg) translateY(4px);
+    z-index: 0;
+  }
+
+  .dinner-card {
+    background: white;
+    border-radius: 28px;
+    padding: 36px 28px 28px;
+    text-align: center;
+    box-shadow: 0 8px 32px rgba(0,0,0,0.12);
+    position: relative;
+    z-index: 1;
+    border: 3px solid #FDE68A;
+    min-height: 280px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    transition: transform 0.35s cubic-bezier(0.34,1.3,0.64,1), opacity 0.2s;
+  }
+
+  .dinner-card.swoosh-out {
+    transform: translateX(120%) rotate(12deg);
+    opacity: 0;
+  }
+
+  .dinner-card.swoosh-in {
+    animation: swooshIn 0.4s cubic-bezier(0.34,1.2,0.64,1) both;
+  }
+
+  @keyframes swooshIn {
+    from { transform: translateX(-80%) rotate(-8deg); opacity: 0; }
+    to { transform: translateX(0) rotate(0deg); opacity: 1; }
+  }
+
+  .dinner-tag {
+    display: inline-block;
+    font-size: 0.72rem;
+    font-weight: 800;
+    letter-spacing: 1.5px;
+    text-transform: uppercase;
+    padding: 3px 12px;
+    border-radius: 50px;
+    margin-bottom: 16px;
+  }
+
+  .dinner-tag.imaginative { background: #EDE9FE; color: #6D28D9; }
+  .dinner-tag.silly { background: #FEE2E2; color: #B91C1C; }
+  .dinner-tag.deep { background: #DBEAFE; color: #1D4ED8; }
+  .dinner-tag.favorites { background: #DCFCE7; color: #15803D; }
+  .dinner-tag.story { background: #FEF3C7; color: #92400E; }
+
+  .dinner-emoji-big {
+    font-size: 3.5rem;
+    margin-bottom: 14px;
+    display: block;
+  }
+
+  .dinner-question {
+    font-size: 1.25rem;
+    font-weight: 800;
+    color: #1E293B;
+    line-height: 1.45;
+    margin-bottom: 14px;
+  }
+
+  .dinner-prompt {
+    font-size: 0.82rem;
+    color: #94A3B8;
+    font-style: italic;
+    font-weight: 600;
+  }
+
+  .dinner-counter {
+    font-size: 0.82rem;
+    color: #CBD5E1;
+    font-weight: 700;
+    margin-top: 4px;
+  }
+
+  .dinner-nav {
+    display: flex;
+    gap: 16px;
+    align-items: center;
+  }
+
+  .dinner-nav-btn {
+    width: 54px;
+    height: 54px;
+    border-radius: 50%;
+    border: none;
+    font-size: 1.4rem;
+    cursor: pointer;
+    transition: all 0.15s;
+    box-shadow: 0 4px 0 rgba(0,0,0,0.12);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+
+  .dinner-nav-btn.prev-d {
+    background: #F1F5F9;
+    color: #64748B;
+    box-shadow: 0 4px 0 #CBD5E1;
+  }
+
+  .dinner-nav-btn.next-d {
+    background: #FBBF24;
+    color: white;
+    box-shadow: 0 4px 0 #D97706;
+    width: 64px;
+    height: 64px;
+    font-size: 1.6rem;
+  }
+
+  .dinner-nav-btn:hover { transform: translateY(-3px); }
+  .dinner-nav-btn:active { transform: translateY(1px); }
+
+  .dinner-shuffle-btn {
+    background: white;
+    border: 2.5px solid #E2E8F0;
+    border-radius: 50px;
+    padding: 8px 20px;
+    font-family: 'Comic Sans MS', 'Chalkboard SE', 'Marker Felt', cursive;
+    font-size: 0.85rem;
+    font-weight: 800;
+    color: #64748B;
+    cursor: pointer;
+    margin-top: 18px;
+    transition: all 0.15s;
+  }
+
+  .dinner-shuffle-btn:hover { border-color: #FBBF24; color: #92400E; background: #FFFBEB; }
+
+  /* ---- WARPLANES SECTION ---- */
+  #planesSection {
+    display: none;
+    flex-direction: column;
+    align-items: center;
+    padding: 20px 20px 40px;
+    position: relative;
+    z-index: 1;
+  }
+
+  .plane-score-bar {
+    display: flex;
+    gap: 20px;
+    margin-bottom: 20px;
+    flex-wrap: wrap;
+    justify-content: center;
+  }
+
+  .plane-score-pill {
+    background: white;
+    border-radius: 50px;
+    padding: 6px 20px;
+    font-size: 0.9rem;
+    font-weight: 800;
+    box-shadow: 0 3px 0 rgba(0,0,0,0.08);
+  }
+
+  .plane-score-pill.p-correct { color: #22C55E; border: 2.5px solid #22C55E; }
+  .plane-score-pill.p-wrong   { color: #EF4444; border: 2.5px solid #EF4444; }
+
+  .plane-card {
+    background: #0F172A;
+    border-radius: 24px;
+    width: 380px;
+    max-width: 100%;
+    overflow: hidden;
+    box-shadow: 0 16px 48px rgba(0,0,0,0.35);
+    margin-bottom: 20px;
+    position: relative;
+  }
+
+  .plane-img-wrap {
+    width: 100%;
+    height: 220px;
+    position: relative;
+    background: #1E293B;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    overflow: hidden;
+  }
+
+  .plane-img-wrap img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    transition: opacity 0.4s;
+  }
+
+  .plane-img-wrap .img-loading {
+    position: absolute;
+    color: #475569;
+    font-size: 2rem;
+    animation: spin 1.2s linear infinite;
+  }
+
+  @keyframes spin { to { transform: rotate(360deg); } }
+
+  .plane-img-wrap .img-error {
+    position: absolute;
+    color: #475569;
+    font-size: 0.85rem;
+    font-weight: 700;
+    text-align: center;
+    padding: 10px;
+  }
+
+  .plane-country-badge {
+    position: absolute;
+    top: 12px;
+    right: 12px;
+    background: rgba(0,0,0,0.65);
+    color: white;
+    border-radius: 50px;
+    padding: 4px 12px;
+    font-size: 0.78rem;
+    font-weight: 800;
+    backdrop-filter: blur(4px);
+    letter-spacing: 0.5px;
+  }
+
+  .plane-question-area {
+    padding: 18px 18px 20px;
+  }
+
+  .plane-q-label {
+    font-size: 0.7rem;
+    font-weight: 800;
+    letter-spacing: 2px;
+    color: #475569;
+    text-transform: uppercase;
+    margin-bottom: 6px;
+  }
+
+  .plane-q-text {
+    font-size: 1.05rem;
+    font-weight: 800;
+    color: #F1F5F9;
+    margin-bottom: 16px;
+    line-height: 1.4;
+  }
+
+  .plane-choices {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 10px;
+  }
+
+  .plane-choice {
+    background: #1E293B;
+    border: 2px solid #334155;
+    border-radius: 14px;
+    padding: 11px 8px;
+    font-family: 'Comic Sans MS', 'Chalkboard SE', 'Marker Felt', cursive;
+    font-size: 0.82rem;
+    font-weight: 800;
+    color: #CBD5E1;
+    cursor: pointer;
+    transition: all 0.15s;
+    text-align: center;
+    line-height: 1.3;
+  }
+
+  .plane-choice:hover:not(:disabled) {
+    border-color: #60A5FA;
+    color: white;
+    background: #1E3A5F;
+    transform: translateY(-2px);
+  }
+
+  .plane-choice.p-correct-ans {
+    background: #14532D;
+    border-color: #22C55E;
+    color: #86EFAC;
+  }
+
+  .plane-choice.p-wrong-ans {
+    background: #450A0A;
+    border-color: #EF4444;
+    color: #FCA5A5;
+  }
+
+  .plane-fact-box {
+    background: #1E293B;
+    border-left: 3px solid #60A5FA;
+    border-radius: 0 10px 10px 0;
+    padding: 10px 14px;
+    margin-top: 14px;
+    font-size: 0.8rem;
+    color: #94A3B8;
+    font-weight: 700;
+    line-height: 1.5;
+    display: none;
+  }
+
+  .plane-nav-row {
+    display: flex;
+    gap: 14px;
+    margin-top: 4px;
+  }
+
+  .plane-nav-btn {
+    background: #1E293B;
+    color: #94A3B8;
+    border: 2px solid #334155;
+    border-radius: 50px;
+    padding: 10px 26px;
+    font-family: 'Comic Sans MS', 'Chalkboard SE', 'Marker Felt', cursive;
+    font-size: 0.95rem;
+    font-weight: 800;
+    cursor: pointer;
+    transition: all 0.15s;
+  }
+
+  .plane-nav-btn.primary {
+    background: #2563EB;
+    color: white;
+    border-color: #2563EB;
+    box-shadow: 0 4px 0 #1D4ED8;
+  }
+
+  .plane-nav-btn.primary:hover { transform: translateY(-2px); box-shadow: 0 6px 0 #1D4ED8; }
+  .plane-nav-btn:hover { border-color: #60A5FA; color: white; }
+
+  .plane-progress {
+    font-size: 0.78rem;
+    color: #64748B;
+    font-weight: 700;
+    margin-top: 14px;
+  }
+</style>
+</head>
+<body>
+
+<!-- Floating background emojis -->
+<div class="bg-star" style="left:5%;animation-duration:12s;animation-delay:0s">⭐</div>
+<div class="bg-star" style="left:15%;animation-duration:15s;animation-delay:2s">🌟</div>
+<div class="bg-star" style="left:30%;animation-duration:9s;animation-delay:4s">✨</div>
+<div class="bg-star" style="left:50%;animation-duration:13s;animation-delay:1s">🌈</div>
+<div class="bg-star" style="left:65%;animation-duration:11s;animation-delay:6s">⭐</div>
+<div class="bg-star" style="left:80%;animation-duration:16s;animation-delay:3s">🌟</div>
+<div class="bg-star" style="left:92%;animation-duration:10s;animation-delay:7s">✨</div>
+
+<header>
+  <h1 id="mainTitle">🧠 Brain Blast! ✨</h1>
+  <p class="subtitle" id="mainSubtitle">Tap a card to learn, then pick the right answer!</p>
+</header>
+
+<div class="mode-toggle">
+  <button class="mode-btn active" id="modeGame" onclick="switchMode('game')">🎮 Brain Blast</button>
+  <button class="mode-btn" id="modeDinner" onclick="switchMode('dinner')">🍽️ Dinner Table Talk</button>
+  <button class="mode-btn" id="modePlanes" onclick="switchMode('planes')">✈️ Warplanes</button>
+</div>
+
+<div class="scoreboard" id="scoreboard">
+  <div class="score-box correct">✅ Correct: <span id="correctCount">0</span></div>
+  <div class="score-box wrong">❌ Wrong: <span id="wrongCount">0</span></div>
+  <div class="score-box streak">🔥 Streak: <span id="streakCount">0</span></div>
+</div>
+
+<div class="categories" id="categoriesDiv">
+  <button class="cat-btn active" data-cat="all">🌟 All</button>
+  <button class="cat-btn" data-cat="math">🔢 Math</button>
+  <button class="cat-btn" data-cat="animals">🐾 Animals</button>
+  <button class="cat-btn" data-cat="words">📖 Words</button>
+  <button class="cat-btn" data-cat="science">🔬 Science</button>
+</div>
+
+<div class="card-area" id="cardArea">
+  <div class="progress-bar-wrap">
+    <div class="progress-fill" id="progressFill" style="width:0%"></div>
+  </div>
+
+  <div class="card-scene" id="cardScene" onclick="flipCard()">
+    <div class="card-inner" id="cardInner">
+      <div class="card-face card-front">
+        <div class="card-emoji" id="cardEmoji">🌟</div>
+        <div class="card-question" id="cardQuestion">Loading...</div>
+        <div class="flip-label">👆 Tap to peek at the answer!</div>
+      </div>
+      <div class="card-face card-back">
+        <div class="card-emoji">💡</div>
+        <div class="card-answer" id="cardAnswer">Answer</div>
+        <div class="card-hint" id="cardHint"></div>
+      </div>
+    </div>
+  </div>
+
+  <div class="choices" id="choices"></div>
+
+  <div class="nav-btns">
+    <button class="nav-btn secondary" onclick="prevCard()">⬅ Back</button>
+    <button class="nav-btn" onclick="nextCard()">Next ➡</button>
+  </div>
+</div>
+
+<div class="win-screen" id="winScreen">
+  <h2>🎉 Amazing Job! 🎉</h2>
+  <div class="win-stars" id="winStars">⭐⭐⭐</div>
+  <div class="win-score" id="winScore"></div>
+  <button class="nav-btn" onclick="restartGame()">Play Again! 🚀</button>
+</div>
+
+<div class="feedback" id="feedback"></div>
+
+<!-- ===== DINNER TABLE TALK SECTION ===== -->
+<div id="dinnerSection">
+
+  <div class="dinner-filter">
+    <button class="d-filter-btn active" data-dtype="all" onclick="filterDinner('all', this)">✨ All</button>
+    <button class="d-filter-btn" data-dtype="imaginative" onclick="filterDinner('imaginative', this)">🌈 Imaginative</button>
+    <button class="d-filter-btn" data-dtype="silly" onclick="filterDinner('silly', this)">🤪 Silly</button>
+    <button class="d-filter-btn" data-dtype="deep" onclick="filterDinner('deep', this)">💭 Deep</button>
+    <button class="d-filter-btn" data-dtype="favorites" onclick="filterDinner('favorites', this)">⭐ Favorites</button>
+    <button class="d-filter-btn" data-dtype="story" onclick="filterDinner('story', this)">📖 Story Time</button>
+  </div>
+
+  <div class="dinner-card-wrap">
+    <div class="dinner-card" id="dinnerCard">
+      <span class="dinner-tag" id="dinnerTag">Imaginative</span>
+      <span class="dinner-emoji-big" id="dinnerEmoji">🌈</span>
+      <div class="dinner-question" id="dinnerQuestion">Loading...</div>
+      <div class="dinner-prompt" id="dinnerPrompt"></div>
+    </div>
+  </div>
+
+  <div class="dinner-counter" id="dinnerCounter">Card 1 of 30</div>
+
+  <div class="dinner-nav" style="margin-top:18px;">
+    <button class="dinner-nav-btn prev-d" onclick="prevDinner()" title="Previous">⬅</button>
+    <button class="dinner-nav-btn next-d" onclick="nextDinner()" title="Next card">➡</button>
+  </div>
+
+  <button class="dinner-shuffle-btn" onclick="shuffleDinner()">🔀 Shuffle Cards</button>
+
+</div>
+
+<!-- ===== WARPLANES SECTION ===== -->
+<div id="planesSection">
+
+  <div class="plane-score-bar">
+    <div class="plane-score-pill p-correct">✅ Correct: <span id="planeCorrect">0</span></div>
+    <div class="plane-score-pill p-wrong">❌ Wrong: <span id="planeWrong">0</span></div>
+  </div>
+
+  <div class="plane-card">
+    <div class="plane-img-wrap">
+      <span class="img-loading" id="planeSpinner">⟳</span>
+      <img id="planeImg" src="" alt="Warplane" crossorigin="anonymous" style="opacity:0;" onload="planeImgLoaded()" onerror="planeImgError()"/>
+      <div class="plane-country-badge" id="planeCountry"></div>
+    </div>
+    <div class="plane-question-area">
+      <div class="plane-q-label">✈️ Name this warplane</div>
+      <div class="plane-q-text" id="planeQText">Which aircraft is this?</div>
+      <div class="plane-choices" id="planeChoices"></div>
+      <div class="plane-fact-box" id="planeFactBox"></div>
+    </div>
+  </div>
+
+  <div class="plane-progress" id="planeProgress">Plane 1 of 20</div>
+
+  <div class="plane-nav-row">
+    <button class="plane-nav-btn" onclick="prevPlane()">⬅ Back</button>
+    <button class="plane-nav-btn primary" onclick="nextPlane()">Next ➡</button>
+  </div>
+
+</div>
+
+<script>
+const ALL_CARDS = [
+  // MATH
+  { cat:'math', emoji:'🍕', q:'If you have 3 slices of pizza and eat 1, how many are left?', a:'2 slices', choices:['2 slices','4 slices','1 slice','3 slices'], hint:'Count what remains!' },
+  { cat:'math', emoji:'🐑', q:'Count the legs on 2 sheep. How many legs are there?', a:'8 legs', choices:['6 legs','8 legs','4 legs','10 legs'], hint:'Each sheep has 4 legs.' },
+  { cat:'math', emoji:'🍎', q:'5 red apples plus 3 green apples equals how many apples?', a:'8 apples', choices:['7 apples','9 apples','8 apples','6 apples'], hint:'Add them together!' },
+  { cat:'math', emoji:'🪙', q:'You have 10 coins and give 4 away. How many do you have?', a:'6 coins', choices:['5 coins','7 coins','4 coins','6 coins'], hint:'10 minus 4!' },
+  { cat:'math', emoji:'🎈', q:'If there are 4 birthday cakes with 3 candles each, how many candles?', a:'12 candles', choices:['10 candles','14 candles','12 candles','8 candles'], hint:'Multiply 4 × 3!' },
+  { cat:'math', emoji:'🐣', q:'A hen lays 2 eggs a day. How many eggs in 3 days?', a:'6 eggs', choices:['5 eggs','6 eggs','7 eggs','4 eggs'], hint:'2 + 2 + 2!' },
+  { cat:'math', emoji:'🌷', q:'Which number is bigger: 47 or 74?', a:'74', choices:['47','74','They are equal','Cannot tell'], hint:'Look at the tens digit!' },
+  { cat:'math', emoji:'📐', q:'How many sides does a triangle have?', a:'3 sides', choices:['4 sides','3 sides','5 sides','2 sides'], hint:'Tri means three!' },
+
+  // ANIMALS
+  { cat:'animals', emoji:'🦈', q:'What is the largest fish in the ocean?', a:'Whale shark', choices:['Great white shark','Whale shark','Blue whale','Giant squid'], hint:'It is gentle and eats tiny plankton.' },
+  { cat:'animals', emoji:'🦋', q:'What do caterpillars turn into?', a:'Butterflies', choices:['Bees','Butterflies','Moths & butterflies','Beetles'], hint:'They sleep in a cocoon first!' },
+  { cat:'animals', emoji:'🐘', q:'Which animal has the best memory?', a:'Elephant', choices:['Dolphin','Elephant','Crow','Chimpanzee'], hint:'They never forget!' },
+  { cat:'animals', emoji:'🦜', q:'What is a group of owls called?', a:'A parliament', choices:['A flock','A parliament','A herd','A pack'], hint:'Like where lawmakers work!' },
+  { cat:'animals', emoji:'🐧', q:'Can penguins fly?', a:'No — they swim!', choices:['Yes, at night','No — they swim!','Only baby penguins','Yes, very fast'], hint:'Their wings are flippers.' },
+  { cat:'animals', emoji:'🐙', q:'How many hearts does an octopus have?', a:'3 hearts', choices:['1 heart','2 hearts','3 hearts','4 hearts'], hint:'Two pump blood to the gills, one to the body!' },
+  { cat:'animals', emoji:'🦒', q:'What do giraffes eat?', a:'Leaves from trees', choices:['Grass only','Leaves from trees','Fish','Insects'], hint:'Their long neck reaches high branches!' },
+  { cat:'animals', emoji:'🐢', q:'How long can a tortoise live?', a:'Over 100 years!', choices:['About 10 years','50 years','Over 100 years!','30 years'], hint:'Some are older than your great-great-grandparents!' },
+
+  // WORDS
+  { cat:'words', emoji:'📝', q:'What do you call a word that describes a noun? (e.g., "big" or "blue")', a:'Adjective', choices:['Verb','Noun','Adjective','Adverb'], hint:'It describes how something looks or feels.' },
+  { cat:'words', emoji:'🔤', q:'How many vowels are in the English alphabet?', a:'5 vowels', choices:['3 vowels','5 vowels','7 vowels','4 vowels'], hint:'A, E, I, O, U!' },
+  { cat:'words', emoji:'📚', q:'What is the opposite of "ancient"?', a:'Modern', choices:['Old','Modern','Large','Slow'], hint:'Things made today are this.' },
+  { cat:'words', emoji:'🗺️', q:'What do you call a made-up story about dragons and magic?', a:'Fantasy', choices:['Biography','History','Fantasy','Poetry'], hint:'Not real — purely from imagination!' },
+  { cat:'words', emoji:'✏️', q:'Unscramble this: DOBRE', a:'BORED', choices:['BOARD','BORED','ROPED','BREED'], hint:'How you feel when nothing fun is happening.' },
+  { cat:'words', emoji:'🎭', q:'What word means the same as "happy"?', a:'Joyful', choices:['Sad','Tired','Joyful','Angry'], hint:'It starts with "joy"!' },
+  { cat:'words', emoji:'🔡', q:'What is a word that sounds the same but has a different meaning? (e.g., "bear" and "bare")', a:'Homophone', choices:['Synonym','Antonym','Homophone','Rhyme'], hint:'Homo = same, phone = sound.' },
+
+  // SCIENCE
+  { cat:'science', emoji:'🌍', q:'What do plants need to make their food?', a:'Sunlight, water & air', choices:['Sunlight, water & air','Just water','Just sunlight','Soil only'], hint:'Think about what a plant needs to grow!' },
+  { cat:'science', emoji:'🌧️', q:'What is the water cycle step where water vapor becomes clouds?', a:'Condensation', choices:['Evaporation','Precipitation','Condensation','Runoff'], hint:'Water vapour cools and clumps together.' },
+  { cat:'science', emoji:'🧲', q:'What material is attracted to a magnet?', a:'Iron (metal)', choices:['Wood','Plastic','Iron (metal)','Rubber'], hint:'Think of fridge magnets clinging to your fridge door.' },
+  { cat:'science', emoji:'🌙', q:'What causes day and night on Earth?', a:'Earth spinning', choices:['The sun turning off','Earth orbiting the sun','Earth spinning','The moon blocking sun'], hint:'It takes 24 hours for one full spin!' },
+  { cat:'science', emoji:'❄️', q:'At what temperature does water freeze (in Celsius)?', a:'0°C', choices:['10°C','0°C','-10°C','5°C'], hint:'Below this it turns to ice!' },
+  { cat:'science', emoji:'🌈', q:'How many colors are in a rainbow?', a:'7 colors', choices:['5 colors','6 colors','7 colors','8 colors'], hint:'Red, orange, yellow, green, blue, indigo, violet!' },
+  { cat:'science', emoji:'🦴', q:'How many bones does an adult human have?', a:'206 bones', choices:['100 bones','150 bones','206 bones','300 bones'], hint:'Babies actually have more — some fuse together as you grow!' },
+];
+
+let cards = [...ALL_CARDS];
+let currentIdx = 0;
+let correct = 0, wrong = 0, streak = 0, answered = false;
+let currentCat = 'all';
+
+function shuffle(arr) {
+  for(let i=arr.length-1;i>0;i--){
+    const j=Math.floor(Math.random()*(i+1));
+    [arr[i],arr[j]]=[arr[j],arr[i]];
+  }
+  return arr;
+}
+
+function filterCards(cat) {
+  currentCat = cat;
+  cards = cat === 'all' ? [...ALL_CARDS] : ALL_CARDS.filter(c => c.cat === cat);
+  shuffle(cards);
+  currentIdx = 0;
+  correct = 0; wrong = 0; streak = 0;
+  updateScore();
+  document.getElementById('winScreen').classList.remove('show');
+  document.getElementById('cardArea').style.display = '';
+  loadCard();
+}
+
+document.querySelectorAll('.cat-btn').forEach(btn => {
+  btn.addEventListener('click', () => {
+    document.querySelectorAll('.cat-btn').forEach(b => b.classList.remove('active'));
+    btn.classList.add('active');
+    filterCards(btn.dataset.cat);
+  });
+});
+
+function loadCard() {
+  if(currentIdx >= cards.length) { showWin(); return; }
+  const card = cards[currentIdx];
+  answered = false;
+
+  // Reset flip
+  document.getElementById('cardInner').classList.remove('flipped');
+  document.getElementById('cardEmoji').textContent = card.emoji;
+  document.getElementById('cardQuestion').textContent = card.q;
+  document.getElementById('cardAnswer').textContent = card.a;
+  document.getElementById('cardHint').textContent = '💡 ' + card.hint;
+
+  // Progress
+  const pct = (currentIdx / cards.length) * 100;
+  document.getElementById('progressFill').style.width = pct + '%';
+
+  // Build choices
+  const choicesDiv = document.getElementById('choices');
+  choicesDiv.innerHTML = '';
+  const shuffled = shuffle([...card.choices]);
+  shuffled.forEach(choice => {
+    const btn = document.createElement('button');
+    btn.className = 'choice-btn';
+    btn.textContent = choice;
+    btn.onclick = () => checkAnswer(choice, card.a, btn);
+    choicesDiv.appendChild(btn);
+  });
+}
+
+function flipCard() {
+  document.getElementById('cardInner').classList.toggle('flipped');
+}
+
+function checkAnswer(choice, correct_a, btn) {
+  if(answered) return;
+  answered = true;
+
+  const allBtns = document.querySelectorAll('.choice-btn');
+  allBtns.forEach(b => {
+    b.disabled = true;
+    if(b.textContent === correct_a) b.classList.add('correct-ans');
+  });
+
+  if(choice === correct_a) {
+    btn.classList.add('correct-ans');
+    correct++;
+    streak++;
+    showFeedback(true);
+  } else {
+    btn.classList.add('wrong-ans');
+    wrong++;
+    streak = 0;
+    showFeedback(false);
+  }
+  updateScore();
+
+  setTimeout(() => nextCard(), 1400);
+}
+
+function showFeedback(isGood) {
+  const f = document.getElementById('feedback');
+  const msgs = isGood
+    ? ['🎉 Awesome!','⭐ Correct!','🔥 Nailed it!','🌟 Great job!','💪 Yes!!']
+    : ['😬 Oops! Try again!','💡 Good try!','🤔 Not quite!','😄 Almost!'];
+  f.textContent = msgs[Math.floor(Math.random()*msgs.length)];
+  f.className = 'feedback show ' + (isGood ? 'good' : 'bad');
+  setTimeout(() => f.classList.remove('show'), 1100);
+  if(isGood && streak > 2) launchConfetti(10);
+}
+
+function updateScore() {
+  document.getElementById('correctCount').textContent = correct;
+  document.getElementById('wrongCount').textContent = wrong;
+  document.getElementById('streakCount').textContent = streak;
+}
+
+function nextCard() {
+  currentIdx++;
+  loadCard();
+}
+
+function prevCard() {
+  if(currentIdx > 0) { currentIdx--; loadCard(); }
+}
+
+function showWin() {
+  document.getElementById('cardArea').style.display = 'none';
+  const winScreen = document.getElementById('winScreen');
+  winScreen.classList.add('show');
+
+  const total = correct + wrong;
+  const pct = total ? Math.round((correct / total) * 100) : 0;
+  const stars = pct >= 80 ? '⭐⭐⭐' : pct >= 50 ? '⭐⭐' : '⭐';
+  document.getElementById('winStars').textContent = stars;
+  document.getElementById('winScore').textContent = `You got ${correct} out of ${total} right! (${pct}%)`;
+
+  launchConfetti(40);
+}
+
+function restartGame() {
+  document.getElementById('winScreen').classList.remove('show');
+  document.getElementById('cardArea').style.display = '';
+  filterCards(currentCat);
+}
+
+function launchConfetti(n) {
+  const colors = ['#FF6B6B','#4ECDC4','#FFE066','#A855F7','#22C55E','#5B9BD5'];
+  for(let i=0;i<n;i++) {
+    setTimeout(() => {
+      const el = document.createElement('div');
+      el.className = 'confetti-piece';
+      el.style.left = Math.random()*100 + 'vw';
+      el.style.background = colors[Math.floor(Math.random()*colors.length)];
+      el.style.animationDuration = (1.5+Math.random()*2)+'s';
+      el.style.animationDelay = (Math.random()*0.5)+'s';
+      el.style.transform = `rotate(${Math.random()*360}deg)`;
+      document.body.appendChild(el);
+      setTimeout(() => el.remove(), 3000);
+    }, i*60);
+  }
+}
+
+// Init
+shuffle(cards);
+loadCard();
+
+// ===== MODE SWITCHING =====
+function switchMode(mode) {
+  const dinnerEl = document.getElementById('dinnerSection');
+  const planesEl = document.getElementById('planesSection');
+  const title = document.getElementById('mainTitle');
+  const subtitle = document.getElementById('mainSubtitle');
+
+  // hide everything
+  document.getElementById('scoreboard').style.display = 'none';
+  document.getElementById('categoriesDiv').style.display = 'none';
+  document.getElementById('cardArea').style.display = 'none';
+  document.getElementById('winScreen').style.display = 'none';
+  dinnerEl.style.display = 'none';
+  planesEl.style.display = 'none';
+
+  document.querySelectorAll('.mode-btn').forEach(b => b.classList.remove('active'));
+
+  if (mode === 'dinner') {
+    dinnerEl.style.display = 'flex';
+    document.getElementById('modeDinner').classList.add('active');
+    title.textContent = '🍽️ Dinner Table Talk';
+    subtitle.textContent = 'Pull a card and talk it out together!';
+    loadDinnerCard();
+  } else if (mode === 'planes') {
+    planesEl.style.display = 'flex';
+    document.getElementById('modePlanes').classList.add('active');
+    title.textContent = '✈️ Warplanes of the World';
+    subtitle.textContent = 'Can you name these legendary aircraft?';
+    loadPlaneCard();
+  } else {
+    document.getElementById('scoreboard').style.display = '';
+    document.getElementById('categoriesDiv').style.display = '';
+    document.getElementById('cardArea').style.display = '';
+    document.getElementById('modeGame').classList.add('active');
+    title.textContent = '🧠 Brain Blast! ✨';
+    subtitle.textContent = 'Tap a card to learn, then pick the right answer!';
+  }
+}
+
+// ===== DINNER TABLE DATA =====
+const ALL_DINNER = [
+  // IMAGINATIVE
+  { type:'imaginative', emoji:'🦕', q:'If you could have any dinosaur as a pet, which one would you choose and what would you name it?', prompt:'Everyone shares their answer!' },
+  { type:'imaginative', emoji:'🏠', q:'If you could design your dream bedroom, what would be in it? Would it have a slide? A pool? A zipline?', prompt:'Draw it in your mind first...' },
+  { type:'imaginative', emoji:'🌍', q:'If you could wake up tomorrow in any country in the world, where would you go and what would you eat for breakfast?', prompt:'No wrong answers here!' },
+  { type:'imaginative', emoji:'🦸', q:'If you had ONE superpower for a whole day, what would you pick and what would you do with it?', prompt:'Think big!' },
+  { type:'imaginative', emoji:'🌊', q:'Would you rather explore outer space or the deepest part of the ocean? What do you think you would find?', prompt:'What sounds more exciting?' },
+  { type:'imaginative', emoji:'🎪', q:'If you could invent a new holiday, what would it celebrate and how would people celebrate it?', prompt:'What would the traditions be?' },
+  { type:'imaginative', emoji:'🧞', q:'A genie gives you three wishes — but you cannot wish for more wishes! What do you wish for?', prompt:'Think carefully...' },
+
+  // SILLY
+  { type:'silly', emoji:'🐸', q:'If animals could talk, which animal do you think would be the most annoying to have a conversation with?', prompt:'Why that animal?' },
+  { type:'silly', emoji:'🍝', q:'If you had to eat only ONE food for the rest of your life, what would you pick?', prompt:'Choose wisely — you are stuck with it!' },
+  { type:'silly', emoji:'🤖', q:'If our family was a band, what instrument would each person play and what would the band be called?', prompt:'Dad gets to be the tambourine...' },
+  { type:'silly', emoji:'🦆', q:'Would you rather speak in quacks like a duck for a whole day, or walk like a penguin for a whole week?', prompt:'You have to pick one!' },
+  { type:'silly', emoji:'🧦', q:'If socks could talk, what do you think your socks would say about you today?', prompt:'They have had a long day...' },
+  { type:'silly', emoji:'🌮', q:'What is the weirdest food combination you can imagine that you think might actually taste good?', prompt:'Extra points for creativity!' },
+  { type:'silly', emoji:'👻', q:'If our house was haunted by a friendly ghost, what do you think it would do all day while we are out?', prompt:'What mischief would it get up to?' },
+
+  // DEEP
+  { type:'deep', emoji:'💛', q:'What is something that someone did for you recently that made you feel really happy or loved?', prompt:'It can be something small.' },
+  { type:'deep', emoji:'🌟', q:'What is one thing you are really proud of yourself for this week, even if nobody else noticed?', prompt:'Everyone shares one thing.' },
+  { type:'deep', emoji:'🤝', q:'What does it mean to be a really good friend? Can you think of someone who is a good friend to you?', prompt:'What makes them special?' },
+  { type:'deep', emoji:'😔', q:'Is there anything that has been worrying you lately? We are all here to listen.', prompt:'No pressure — share what feels okay.' },
+  { type:'deep', emoji:'🌈', q:'If you could change one thing about the world to make it better for kids, what would it be?', prompt:'Dream big — what matters most to you?' },
+  { type:'deep', emoji:'❤️', q:'What is something you wish more people knew about you?', prompt:'This is a safe space!' },
+  { type:'deep', emoji:'🔭', q:'When you grow up, what kind of person do you want to be — not job, but person? Kind? Brave? Funny?', prompt:'What values matter to you?' },
+
+  // FAVORITES
+  { type:'favorites', emoji:'🎬', q:'What is your all-time favourite movie and which character would you most want to be?', prompt:'Tell us why!' },
+  { type:'favorites', emoji:'📚', q:'What is the best book you have ever read? What made it so good?', prompt:'Would you recommend it to us?' },
+  { type:'favorites', emoji:'🎮', q:'If you could only play one game for the rest of the year — video game, board game, or outdoor game — what would it be?', prompt:'Just one!' },
+  { type:'favorites', emoji:'🍕', q:'Rank these from best to worst: pizza, tacos, burgers, pasta. Go!', prompt:'Defend your choices!' },
+  { type:'favorites', emoji:'🎵', q:'What song, when it comes on, immediately makes you feel happy? What is your walk-out song?', prompt:'Everyone hum or sing a few seconds!' },
+
+  // STORY TIME
+  { type:'story', emoji:'🌙', q:'Start a story with these words: "One night, I was looking out my window when I noticed the moon had turned purple..."', prompt:'Take turns adding one sentence each!' },
+  { type:'story', emoji:'🧳', q:'You find a mysterious old suitcase under your bed. It is locked. What is inside? How do you open it?', prompt:'Build the story together around the table.' },
+  { type:'story', emoji:'🗺️', q:'A treasure map appears under your dinner plate tonight. Where does it lead? What do you do first?', prompt:'You have until bedtime to find it!' },
+  { type:'story', emoji:'🐉', q:'A tiny dragon lands on the windowsill and taps on the glass. It looks like it needs help. What do you do?', prompt:'What does the dragon want?' },
+  { type:'story', emoji:'⏰', q:'You wake up and realize you are stuck living today all over again — it is Groundhog Day! What do you do differently?', prompt:'Would you tell anyone?' },
+];
+
+let dinnerCards = [...ALL_DINNER];
+let dinnerIdx = 0;
+let dinnerFilter = 'all';
+
+function filterDinner(type, btn) {
+  document.querySelectorAll('.d-filter-btn').forEach(b => b.classList.remove('active'));
+  btn.classList.add('active');
+  dinnerFilter = type;
+  dinnerCards = type === 'all' ? [...ALL_DINNER] : ALL_DINNER.filter(c => c.type === type);
+  dinnerIdx = 0;
+  loadDinnerCard();
+}
+
+function loadDinnerCard() {
+  if (!dinnerCards.length) return;
+  const card = dinnerCards[dinnerIdx];
+  const el = document.getElementById('dinnerCard');
+
+  el.classList.remove('swoosh-in');
+  void el.offsetWidth; // reflow
+  el.classList.add('swoosh-in');
+
+  document.getElementById('dinnerEmoji').textContent = card.emoji;
+  document.getElementById('dinnerQuestion').textContent = card.q;
+  document.getElementById('dinnerPrompt').textContent = card.prompt;
+
+  const tag = document.getElementById('dinnerTag');
+  tag.textContent = card.type.charAt(0).toUpperCase() + card.type.slice(1);
+  tag.className = 'dinner-tag ' + card.type;
+
+  document.getElementById('dinnerCounter').textContent =
+    'Card ' + (dinnerIdx + 1) + ' of ' + dinnerCards.length;
+}
+
+function nextDinner() {
+  dinnerIdx = (dinnerIdx + 1) % dinnerCards.length;
+  loadDinnerCard();
+}
+
+function prevDinner() {
+  dinnerIdx = (dinnerIdx - 1 + dinnerCards.length) % dinnerCards.length;
+  loadDinnerCard();
+}
+
+function shuffleDinner() {
+  shuffle(dinnerCards);
+  dinnerIdx = 0;
+  loadDinnerCard();
+}
+
+// ===== WARPLANES DATA & LOGIC =====
+const ALL_PLANES = [
+  { name:'F-22 Raptor', country:'🇺🇸 USA', img:'https://upload.wikimedia.org/wikipedia/commons/e/e9/F-22_Raptor_edit1_%28cropped%29.jpg', fact:'The F-22 can cruise at supersonic speed without afterburners — a trick called supercruise. It is widely considered the most capable air superiority fighter ever built.', choices:['F-22 Raptor','F-35 Lightning II','F-15 Eagle','B-2 Spirit'] },
+  { name:'F-35 Lightning II', country:'🇺🇸 USA', img:'https://upload.wikimedia.org/wikipedia/commons/c/c6/F-35A_flight_%28cropped%29.jpg', fact:'One version of the F-35 can take off vertically like a helicopter. Its special helmet lets the pilot see right through the floor of the aircraft!', choices:['F-22 Raptor','F-35 Lightning II','Eurofighter Typhoon','F/A-18 Super Hornet'] },
+  { name:'Su-57 Felon', country:'🇷🇺 Russia', img:'https://upload.wikimedia.org/wikipedia/commons/4/45/Su-57_in_2019_%28cropped%29.jpg', fact:'Russia\'s Su-57 carries its missiles inside its body to stay invisible to radar. It is Russia\'s first true stealth fighter jet.', choices:['Su-57 Felon','MiG-35','Su-35 Flanker-E','Su-27 Flanker'] },
+  { name:'Eurofighter Typhoon', country:'🇬🇧 UK / Europe', img:'https://upload.wikimedia.org/wikipedia/commons/c/c1/Eurofighter_Typhoon_of_the_Royal_Air_Force_MOD_45148306.jpg', fact:'The Typhoon was built by four countries together — UK, Germany, Spain and Italy. It can accelerate from 200mph to 750mph faster than almost any other jet.', choices:['Eurofighter Typhoon','Dassault Rafale','Saab Gripen','F-16 Fighting Falcon'] },
+  { name:'Dassault Rafale', country:'🇫🇷 France', img:'https://upload.wikimedia.org/wikipedia/commons/6/62/Rafale_F3-R_-_RIAT_2018_%2843604677252%29_%28cropped%29.jpg', fact:'The Rafale can launch from aircraft carriers AND regular runways. Its name means gust of wind in French.', choices:['Dassault Rafale','Eurofighter Typhoon','Mirage 2000','JAS 39 Gripen'] },
+  { name:'Chengdu J-20', country:'🇨🇳 China', img:'https://upload.wikimedia.org/wikipedia/commons/0/04/J-20_at_Airshow_China_2016.jpg', fact:'The J-20 is China\'s first stealth fighter. It has a very long body and front fins called canards near the nose to help it turn sharply.', choices:['Chengdu J-20','Shenyang J-16','F-22 Raptor','Su-57 Felon'] },
+  { name:'F-16 Fighting Falcon', country:'🇺🇸 USA', img:'https://upload.wikimedia.org/wikipedia/commons/c/c9/F-16_June_2008.jpg', fact:'The F-16 has been flying since 1978 and is used by over 25 countries. It was one of the first jets where a computer helps the pilot fly — called fly-by-wire.', choices:['F-16 Fighting Falcon','F/A-18 Super Hornet','A-10 Thunderbolt II','F-15 Eagle'] },
+  { name:'B-2 Spirit', country:'🇺🇸 USA', img:'https://upload.wikimedia.org/wikipedia/commons/5/5c/B-2_Spirit_original.jpg', fact:'The B-2 Spirit stealth bomber looks like a flying wing with no tail! Each one costs over $2 billion, making it one of the most expensive aircraft ever built.', choices:['B-2 Spirit','B-52 Stratofortress','B-1B Lancer','F-117 Nighthawk'] },
+  { name:'Saab JAS 39 Gripen', country:'🇸🇪 Sweden', img:'https://upload.wikimedia.org/wikipedia/commons/d/d4/JAS39C_Gripen_-_RIAT_2014_%2814599479049%29_%28cropped%29.jpg', fact:'Sweden\'s Gripen can land on normal public roads in emergencies! It is also much cheaper to fly than most other modern fighters.', choices:['Saab JAS 39 Gripen','Eurofighter Typhoon','Dassault Rafale','F/A-18 Super Hornet'] },
+  { name:'MiG-29 Fulcrum', country:'🇷🇺 Russia', img:'https://upload.wikimedia.org/wikipedia/commons/e/eb/MiG-29_-_RIAT_2018_%2843553343831%29_%28cropped%29.jpg', fact:'The MiG-29 is famous for a jaw-dropping trick called the Cobra — it points its nose straight up while almost stopping in mid-air, then levels out again.', choices:['MiG-29 Fulcrum','Su-27 Flanker','MiG-35','Su-57 Felon'] },
+  { name:'F/A-18 Super Hornet', country:'🇺🇸 USA', img:'https://upload.wikimedia.org/wikipedia/commons/9/92/FA-18F_Super_Hornet_VFA-102.jpg', fact:'The Super Hornet is catapulted off carriers and goes from 0 to 165mph in just 2 seconds! It is the main fighter jet of the US Navy.', choices:['F/A-18 Super Hornet','F-16 Fighting Falcon','F-22 Raptor','AV-8B Harrier'] },
+  { name:'A-10 Thunderbolt II', country:'🇺🇸 USA', img:'https://upload.wikimedia.org/wikipedia/commons/e/ef/A-10_Thunderbolt_II_In-flight-2.jpg', fact:'Nicknamed the Warthog, the A-10 has a massive cannon that fires 65 rounds per second. It is so tough it can fly home with half a wing missing!', choices:['A-10 Thunderbolt II','F-16 Fighting Falcon','AC-130 Gunship','AV-8B Harrier'] },
+  { name:'HAL Tejas', country:'🇮🇳 India', img:'https://upload.wikimedia.org/wikipedia/commons/8/8c/HAL_Tejas_at_Aero_India_2013.jpg', fact:'India designed and built the Tejas entirely on its own. Its name means radiance in Sanskrit and it is one of the lightest supersonic fighters in the world.', choices:['HAL Tejas','Chengdu J-20','Dassault Rafale','Eurofighter Typhoon'] },
+  { name:'Panavia Tornado', country:'🇬🇧 UK / Europe', img:'https://upload.wikimedia.org/wikipedia/commons/d/d4/Tornado_GR4_%288%29_%28cropped%29.jpg', fact:'The Tornado has swing wings that fold back for high-speed flight and spread wide for landing. It was built by the UK, Germany and Italy together.', choices:['Panavia Tornado','Eurofighter Typhoon','F-111','B-1B Lancer'] },
+  { name:'KAI T-50 Golden Eagle', country:'🇰🇷 South Korea', img:'https://upload.wikimedia.org/wikipedia/commons/9/9a/T-50_Golden_Eagle_%28cropped%29.jpg', fact:'South Korea built the T-50 as a supersonic trainer that can also fight. South Korea is one of only a handful of countries that builds its own supersonic jets.', choices:['KAI T-50 Golden Eagle','Chengdu J-10','Saab Gripen','F-16 Fighting Falcon'] },
+];
+
+let planeIdx = 0;
+let planeAnswered = false;
+let planeCorrectCount = 0;
+let planeWrongCount = 0;
+let planesList = [...ALL_PLANES];
+
+function loadPlaneCard() {
+  if (planeIdx >= planesList.length) planeIdx = 0;
+  const plane = planesList[planeIdx];
+  planeAnswered = false;
+
+  const img = document.getElementById('planeImg');
+  const spinner = document.getElementById('planeSpinner');
+  const factBox = document.getElementById('planeFactBox');
+  const imgWrap = document.querySelector('.plane-img-wrap');
+
+  // clear old error messages
+  imgWrap.querySelectorAll('.img-error').forEach(e => e.remove());
+
+  img.style.opacity = 0;
+  img.style.display = 'block';
+  spinner.style.display = 'block';
+  factBox.style.display = 'none';
+
+  document.getElementById('planeCountry').textContent = plane.country;
+  document.getElementById('planeProgress').textContent = 'Plane ' + (planeIdx + 1) + ' of ' + planesList.length;
+
+  img.src = plane.img;
+
+  const choicesDiv = document.getElementById('planeChoices');
+  choicesDiv.innerHTML = '';
+  const shuffled = shuffle([...plane.choices]);
+  shuffled.forEach(choice => {
+    const btn = document.createElement('button');
+    btn.className = 'plane-choice';
+    btn.textContent = choice;
+    btn.onclick = () => checkPlaneAnswer(choice, plane.name, btn, plane.fact);
+    choicesDiv.appendChild(btn);
+  });
+
+  document.getElementById('planeCorrect').textContent = planeCorrectCount;
+  document.getElementById('planeWrong').textContent = planeWrongCount;
+}
+
+function planeImgLoaded() {
+  document.getElementById('planeImg').style.opacity = 1;
+  document.getElementById('planeSpinner').style.display = 'none';
+}
+
+function planeImgError() {
+  document.getElementById('planeSpinner').style.display = 'none';
+  document.getElementById('planeImg').style.display = 'none';
+  const errDiv = document.createElement('div');
+  errDiv.className = 'img-error';
+  errDiv.textContent = '📡 Photo needs wifi to load';
+  document.querySelector('.plane-img-wrap').appendChild(errDiv);
+}
+
+function checkPlaneAnswer(choice, correct, btn, fact) {
+  if (planeAnswered) return;
+  planeAnswered = true;
+
+  document.querySelectorAll('.plane-choice').forEach(b => {
+    b.disabled = true;
+    if (b.textContent === correct) b.classList.add('p-correct-ans');
+  });
+
+  if (choice === correct) {
+    btn.classList.add('p-correct-ans');
+    planeCorrectCount++;
+    launchConfetti(6);
+  } else {
+    btn.classList.add('p-wrong-ans');
+    planeWrongCount++;
+  }
+
+  document.getElementById('planeCorrect').textContent = planeCorrectCount;
+  document.getElementById('planeWrong').textContent = planeWrongCount;
+
+  const factBox = document.getElementById('planeFactBox');
+  factBox.textContent = '💡 ' + fact;
+  factBox.style.display = 'block';
+}
+
+function nextPlane() {
+  planeIdx++;
+  if (planeIdx >= planesList.length) {
+    planeIdx = 0;
+    planesList = shuffle([...ALL_PLANES]);
+  }
+  loadPlaneCard();
+}
+
+function prevPlane() {
+  planeIdx = Math.max(0, planeIdx - 1);
+  loadPlaneCard();
+}
+
+</script>
+</body>
+</html>
